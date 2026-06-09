@@ -14,6 +14,7 @@ export default function Facturation() {
     montant: '',
     description: '',
     statut: 'en_attente',
+    mode_paiement: 'especes',
   })
   const [erreur, setErreur] = useState('')
   const [saving, setSaving] = useState(false)
@@ -47,10 +48,11 @@ export default function Facturation() {
       montant: parseFloat(form.montant),
       description: form.description,
       statut: form.statut,
+      mode_paiement: form.mode_paiement,
       date: new Date().toLocaleDateString('fr-FR'),
     }
     setFactures([nouvelleFacture, ...factures])
-    setForm({ patient_id: '', montant: '', description: '', statut: 'en_attente' })
+    setForm({ patient_id: '', montant: '', description: '', statut: 'en_attente', mode_paiement: 'especes' })
     setAfficherForm(false)
     setSaving(false)
   }
@@ -116,6 +118,14 @@ export default function Facturation() {
                   placeholder="5000" />
               </div>
               <div>
+                <label className="text-sm font-medium text-slate-700 mb-1 block">Mode de paiement</label>
+                <select name="mode_paiement" value={form.mode_paiement} onChange={handleChange}
+                  className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-800">
+                  <option value="especes">Espèces</option>
+                  <option value="mobile_money">Mobile Money (Wave / Orange Money)</option>
+                </select>
+              </div>
+              <div>
                 <label className="text-sm font-medium text-slate-700 mb-1 block">Statut</label>
                 <select name="statut" value={form.statut} onChange={handleChange}
                   className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-800">
@@ -150,6 +160,7 @@ export default function Facturation() {
                   <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Patient</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Description</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Montant</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Mode</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Date</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Statut</th>
                 </tr>
@@ -161,6 +172,13 @@ export default function Facturation() {
                     <td className="px-6 py-4 text-sm text-slate-500">{f.patient?.prenom} {f.patient?.nom}</td>
                     <td className="px-6 py-4 text-sm text-slate-500">{f.description}</td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-800">{f.montant.toLocaleString()} FCFA</td>
+                    <td className="px-6 py-4">
+                      {f.mode_paiement === 'mobile_money' ? (
+                        <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">📱 Mobile</span>
+                      ) : (
+                        <span className="bg-slate-50 text-slate-600 text-xs px-2 py-1 rounded-full">💵 Espèces</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-sm text-slate-500">{f.date}</td>
                     <td className="px-6 py-4">
                       {f.statut === 'paye' ? (
