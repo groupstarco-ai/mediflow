@@ -13,18 +13,44 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) {
+    if (authError) {
       setError('Email ou mot de passe incorrect')
       setLoading(false)
       return
     }
 
-    window.location.href = '/dashboard'
+    const { data: utilisateur } = await supabase
+      .from('utilisateurs')
+      .select('role')
+      .eq('email', email)
+      .single()
+
+    if (!utilisateur) {
+      window.location.href = '/dashboard'
+      return
+    }
+
+    switch (utilisateur.role) {
+      case 'administrateur':
+        window.location.href = '/dashboard'
+        break
+      case 'medecin':
+        window.location.href = '/dashboard'
+        break
+      case 'infirmier':
+        window.location.href = '/dashboard'
+        break
+      case 'gestionnaire':
+        window.location.href = '/dashboard'
+        break
+      default:
+        window.location.href = '/dashboard'
+    }
   }
 
   return (
