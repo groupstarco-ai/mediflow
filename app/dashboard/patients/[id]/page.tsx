@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, use } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '../../../components/Sidebar'
 
-export default function DetailPatient({ params }: { params: { id: string } }) {
+export default function DetailPatient({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [patient, setPatient] = useState<any>(null)
   const [dossiers, setDossiers] = useState<any[]>([])
   const [rdvs, setRdvs] = useState<any[]>([])
@@ -18,28 +19,28 @@ export default function DetailPatient({ params }: { params: { id: string } }) {
       const { data: p } = await supabase
         .from('patients')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
       setPatient(p)
 
       const { data: d } = await supabase
         .from('dossiers_medicaux')
         .select('*, medecins(nom, prenom)')
-        .eq('patient_id', params.id)
+        .eq('patient_id', id)
         .order('date_consultation', { ascending: false })
       setDossiers(d || [])
 
       const { data: r } = await supabase
         .from('rendez_vous')
         .select('*, medecins(nom, prenom)')
-        .eq('patient_id', params.id)
+        .eq('patient_id', id)
         .order('date_heure', { ascending: false })
       setRdvs(r || [])
 
       setLoading(false)
     }
     charger()
-  }, [params.id])
+  }, [id])
 
   if (loading) return (
     <div className="flex min-h-screen bg-slate-50">
@@ -80,7 +81,7 @@ export default function DetailPatient({ params }: { params: { id: string } }) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Sexe</span>
-                <span className="text-slate-800">{patient?.sexe || '—'}</span>
+                <span className="text-slate-800 capitalize">{patient?.sexe || '—'}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Groupe sanguin</span>
