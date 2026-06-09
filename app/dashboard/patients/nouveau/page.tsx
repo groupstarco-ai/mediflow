@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '../../../components/Sidebar'
+import { enregistrerAction } from '@/lib/audit'
 
 export default function NouveauPatient() {
   const [form, setForm] = useState({
@@ -38,6 +39,7 @@ export default function NouveauPatient() {
       setLoading(false)
       return
     }
+    await enregistrerAction('creation', 'patients', `Nouveau patient: ${form.prenom} ${form.nom}`)
     window.location.href = '/dashboard/patients'
   }
 

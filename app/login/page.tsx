@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { enregistrerAction } from '@/lib/audit'
 
 const MAX_TENTATIVES = 3
 const DUREE_BLOCAGE = 30 * 60 * 1000
@@ -14,7 +15,6 @@ export default function LoginPage() {
 
   const verifierBlocage = () => {
     const bloque = localStorage.getItem('mediflow_bloque')
-    const tentatives = parseInt(localStorage.getItem('mediflow_tentatives') || '0')
     const tempsBlocage = parseInt(localStorage.getItem('mediflow_temps_blocage') || '0')
 
     if (bloque && Date.now() < tempsBlocage + DUREE_BLOCAGE) {
@@ -61,7 +61,9 @@ export default function LoginPage() {
 
     localStorage.removeItem('mediflow_tentatives')
     localStorage.removeItem('mediflow_bloque')
-    localStorage.removeItem('mediflow_temps_blocage')
+    localStorage.removeItem('mediflow_temps_bocage')
+
+    await enregistrerAction('connexion', 'auth', `Connexion réussie: ${email}`)
 
     const { data: utilisateur } = await supabase
       .from('utilisateurs')
