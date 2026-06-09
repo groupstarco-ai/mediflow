@@ -7,14 +7,13 @@ import Sidebar from '../../components/Sidebar'
 export default function RendezVous() {
   const [rdvs, setRdvs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [recherche, setRecherche] = useState('')
+  const [filtre, setFiltre] = useState('tous')
 
   useEffect(() => {
     const getRdvs = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        window.location.href = '/login'
-        return
-      }
+      if (!user) { window.location.href = '/login'; return }
       const { data } = await supabase
         .from('rendez_vous')
         .select('*, patients(nom, prenom), medecins(nom, prenom)')
@@ -25,16 +24,26 @@ export default function RendezVous() {
     getRdvs()
   }, [])
 
-  const statutCouleur = (statut: string) => {
-    switch (statut) {
-      case 'confirme': return 'bg-green-50 text-green-700'
-      case 'planifie': return 'bg-blue-50 text-blue-700'
-      case 'en_cours': return 'bg-yellow-50 text-yellow-700'
-      case 'termine': return 'bg-slate-50 text-slate-600'
-      case 'annule': return 'bg-red-50 text-red-700'
-      case 'absent': return 'bg-orange-50 text-orange-700'
-      default: return 'bg-slate-50 text-slate-600'
-    }
+  const rdvFiltres = rdvs.filter(r => {
+    const matchRecherche = `${r.patients?.prenom} ${r.patients?.nom} ${r.motif}`.toLowerCase().includes(recherche.toLowerCase())
+    const matchFiltre = filtre === 'tous' || r.statut === filtre
+    return matchRecherche && matchFiltre
+  })
+
+  const statutConfig: any = {
+    planifie: { label: 'Planifié', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' },
+    confirme: { label: 'Confirmé', bg: 'bg-green-50', text: 'text-green-700', dot: 'bg-green-400' },
+    en_cours: { label: 'En cours', bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-400' },
+    termine: { label: 'Terminé', bg: 'bg-slate-50', text: 'text-slate-600', dot: 'bg-slate-400' },
+    annule: { label: 'Annulé', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-400' },
+    absent: { label: 'Absent', bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-400' },
+  }
+
+  const stats = {
+    total: rdvs.length,
+    planifie: rdvs.filter(r => r.statut === 'planifie').length,
+    confirme: rdvs.filter(r => r.statut === 'confirme').length,
+    termine: rdvs.filter(r => r.statut === 'termine').length,
   }
 
   return (
@@ -42,63 +51,130 @@ export default function RendezVous() {
       <Sidebar />
       <main className="flex-1 px-8 py-6">
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Rendez-vous</h1>
             <p className="text-slate-500 text-sm mt-1">{rdvs.length} rendez-vous au total</p>
           </div>
-          
           <a href="/dashboard/rendez-vous/nouveau"
-            className="bg-blue-800 text-white px-4 py-2.5 rounded-lg text-sm font-medium"
-          >
+            className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
             + Nouveau RDV
           </a>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-100">
-          {loading ? (
-            <div className="p-8 text-center text-slate-400 text-sm">Chargement...</div>
-          ) : rdvs.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-slate-400 text-sm mb-4">Aucun rendez-vous pour le moment.</p>
-              
-               <a href="/dashboard/rendez-vous/nouveau"
-                className="bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium"
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-lg">📅</div>
+            <div>
+              <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
+              <p className="text-xs text-slate-500">Total</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-lg">⏰</div>
+            <div>
+              <p className="text-2xl font-bold text-blue-700">{stats.planifie}</p>
+              <p className="text-xs text-slate-500">Planifiés</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-lg">✅</div>
+            <div>
+              <p className="text-2xl font-bold text-green-700">{stats.confirme}</p>
+              <p className="text-xs text-slate-500">Confirmés</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-lg">🏁</div>
+            <div>
+              <p className="text-2xl font-bold text-slate-700">{stats.termine}</p>
+              <p className="text-xs text-slate-500">Terminés</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm mb-4 px-4 py-3 flex items-center gap-4">
+          <span className="text-slate-400">🔍</span>
+          <input
+            type="text"
+            placeholder="Rechercher par patient ou motif..."
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            className="flex-1 text-sm outline-none text-slate-700 placeholder-slate-400"
+          />
+          <div className="flex gap-2">
+            {['tous', 'planifie', 'confirme', 'en_cours', 'termine', 'annule'].map((s) => (
+              <button
+                key={s}
+                onClick={() => setFiltre(s)}
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                  filtre === s ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
               >
-                Créer le premier RDV
-              </a>
+                {s === 'tous' ? 'Tous' : statutConfig[s]?.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          {loading ? (
+            <div className="p-12 text-center">
+              <p className="text-4xl mb-3">⏳</p>
+              <p className="text-slate-400 text-sm">Chargement...</p>
+            </div>
+          ) : rdvFiltres.length === 0 ? (
+            <div className="p-12 text-center">
+              <p className="text-4xl mb-3">📭</p>
+              <p className="text-slate-400 text-sm">Aucun rendez-vous trouvé.</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Patient</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Médecin</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Date et heure</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Motif</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-slate-500">Statut</th>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Patient</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Médecin</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date et heure</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Motif</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
                 </tr>
               </thead>
               <tbody>
-                {rdvs.map((rdv) => (
-                  <tr key={rdv.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="px-6 py-4 text-sm font-medium text-slate-800">
-                      {rdv.patients?.prenom} {rdv.patients?.nom}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                      Dr. {rdv.medecins?.prenom} {rdv.medecins?.nom}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                      {new Date(rdv.date_heure).toLocaleDateString('fr-FR')} à {new Date(rdv.date_heure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">{rdv.motif}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs px-2 py-1 rounded-full ${statutCouleur(rdv.statut)}`}>
-                        {rdv.statut}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {rdvFiltres.map((rdv) => {
+                  const s = statutConfig[rdv.statut] || statutConfig.planifie
+                  return (
+                    <tr key={rdv.id} className="border-b border-slate-50 hover:bg-blue-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-blue-800 font-semibold text-sm flex-shrink-0">
+                            {rdv.patients?.prenom?.[0]}{rdv.patients?.nom?.[0]}
+                          </div>
+                          <p className="text-sm font-medium text-slate-800">
+                            {rdv.patients?.prenom} {rdv.patients?.nom}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        Dr. {rdv.medecins?.prenom} {rdv.medecins?.nom}
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-medium text-slate-800">
+                          {new Date(rdv.date_heure).toLocaleDateString('fr-FR')}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {new Date(rdv.date_heure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{rdv.motif || '—'}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium ${s.bg} ${s.text}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`}></span>
+                          {s.label}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           )}
