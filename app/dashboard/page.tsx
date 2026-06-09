@@ -13,8 +13,15 @@ export default function Dashboard() {
     rdvAnnules: 0,
   })
   const [rdvs, setRdvs] = useState<any[]>([])
+  const [heure, setHeure] = useState('')
 
   useEffect(() => {
+    const now = new Date()
+    const h = now.getHours()
+    if (h < 12) setHeure('Bonjour')
+    else if (h < 18) setHeure('Bon après-midi')
+    else setHeure('Bonsoir')
+
     const charger = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
@@ -56,68 +63,132 @@ export default function Dashboard() {
     charger()
   }, [])
 
+  const aujourd_hui = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  })
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
       <main className="flex-1 px-8 py-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">Tableau de bord</h1>
-        <p className="text-slate-500 text-sm mb-8">Bienvenue, {user?.email}</p>
+
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              {heure}, {user?.email?.split('@')[0]} 👋
+            </h1>
+            <p className="text-slate-500 text-sm mt-1 capitalize">{aujourd_hui}</p>
+          </div>
+          <a href="/dashboard/rendez-vous/nouveau"
+            className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
+            + Nouveau RDV
+          </a>
+        </div>
 
         <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl border border-slate-100 p-5">
-            <p className="text-sm text-slate-500 mb-1">Patients actifs</p>
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-slate-500">Patients actifs</p>
+              <span className="text-2xl">👥</span>
+            </div>
             <p className="text-3xl font-bold text-slate-900">{stats.patients}</p>
+            <p className="text-xs text-slate-400 mt-1">Total enregistrés</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 p-5">
-            <p className="text-sm text-slate-500 mb-1">RDV aujourd'hui</p>
-            <p className="text-3xl font-bold text-blue-800">{stats.rdvAujourdhui}</p>
+          <div className="bg-gradient-to-br from-blue-800 to-blue-600 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-blue-100">RDV aujourd'hui</p>
+              <span className="text-2xl">📅</span>
+            </div>
+            <p className="text-3xl font-bold text-white">{stats.rdvAujourdhui}</p>
+            <p className="text-xs text-blue-200 mt-1">Consultations prévues</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 p-5">
-            <p className="text-sm text-slate-500 mb-1">En attente</p>
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-slate-500">En attente</p>
+              <span className="text-2xl">⏳</span>
+            </div>
             <p className="text-3xl font-bold text-yellow-600">{stats.rdvEnAttente}</p>
+            <p className="text-xs text-slate-400 mt-1">À confirmer</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 p-5">
-            <p className="text-sm text-slate-500 mb-1">Annulations</p>
-            <p className="text-3xl font-bold text-red-600">{stats.rdvAnnules}</p>
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-slate-500">Annulations</p>
+              <span className="text-2xl">❌</span>
+            </div>
+            <p className="text-3xl font-bold text-red-500">{stats.rdvAnnules}</p>
+            <p className="text-xs text-slate-400 mt-1">Ce mois</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-100 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-slate-800">Prochains rendez-vous</h2>
-            <a href="/dashboard/rendez-vous" className="text-blue-800 text-sm">Voir tout</a>
-          </div>
-          {rdvs.length === 0 ? (
-            <p className="text-slate-400 text-sm">Aucun rendez-vous à venir.</p>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left px-4 py-2 text-xs font-medium text-slate-500">Patient</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-slate-500">Date et heure</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-slate-500">Motif</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-slate-500">Statut</th>
-                </tr>
-              </thead>
-              <tbody>
+        <div className="grid grid-cols-3 gap-6">
+          <div className="col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-semibold text-slate-800">Prochains rendez-vous</h2>
+              <a href="/dashboard/rendez-vous" className="text-blue-800 text-sm hover:underline">Voir tout →</a>
+            </div>
+            {rdvs.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-4xl mb-2">📭</p>
+                <p className="text-slate-400 text-sm">Aucun rendez-vous à venir.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
                 {rdvs.map((rdv) => (
-                  <tr key={rdv.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="px-4 py-3 text-sm font-medium text-slate-800">
-                      {rdv.patients?.prenom} {rdv.patients?.nom}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-500">
-                      {new Date(rdv.date_heure).toLocaleDateString('fr-FR')} à {new Date(rdv.date_heure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{rdv.motif}</td>
-                    <td className="px-4 py-3">
-                      <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{rdv.statut}</span>
-                    </td>
-                  </tr>
+                  <div key={rdv.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-800 font-semibold text-sm flex-shrink-0">
+                      {rdv.patients?.prenom?.[0]}{rdv.patients?.nom?.[0]}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-800">{rdv.patients?.prenom} {rdv.patients?.nom}</p>
+                      <p className="text-xs text-slate-400">{rdv.motif}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium text-slate-700">
+                        {new Date(rdv.date_heure).toLocaleDateString('fr-FR')}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(rdv.date_heure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{rdv.statut}</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          )}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <h2 className="font-semibold text-slate-800 mb-5">Accès rapide</h2>
+            <div className="flex flex-col gap-3">
+              <a href="/dashboard/patients/nouveau"
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <span className="text-xl">👤</span>
+                <span className="text-sm font-medium text-slate-700">Nouveau patient</span>
+              </a>
+              <a href="/dashboard/rendez-vous/nouveau"
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <span className="text-xl">📅</span>
+                <span className="text-sm font-medium text-slate-700">Nouveau RDV</span>
+              </a>
+              <a href="/dashboard/dossiers/nouveau"
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <span className="text-xl">📋</span>
+                <span className="text-sm font-medium text-slate-700">Nouveau dossier</span>
+              </a>
+              <a href="/dashboard/facturation"
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <span className="text-xl">💰</span>
+                <span className="text-sm font-medium text-slate-700">Facturation</span>
+              </a>
+              <a href="/dashboard/audit"
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <span className="text-xl">🔍</span>
+                <span className="text-sm font-medium text-slate-700">Journal d'audit</span>
+              </a>
+            </div>
+          </div>
         </div>
+
       </main>
     </div>
   )
