@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '../../../components/Sidebar'
+import { enregistrerAction } from '@/lib/audit'
 
 export default function NouveauRdv() {
   const [patients, setPatients] = useState<any[]>([])
@@ -51,6 +52,13 @@ export default function NouveauRdv() {
       setLoading(false)
       return
     }
+    const patient = patients.find(p => p.id === form.patient_id)
+    const medecin = medecins.find(m => m.id === form.medecin_id)
+    await enregistrerAction(
+      'creation',
+      'rendez_vous',
+      `Nouveau RDV — Patient: ${patient?.prenom} ${patient?.nom} — Médecin: Dr. ${medecin?.prenom} ${medecin?.nom} — Date: ${form.date_heure}`
+    )
     window.location.href = '/dashboard/rendez-vous'
   }
 
@@ -66,11 +74,11 @@ export default function NouveauRdv() {
           <span className="text-slate-800 text-sm font-medium">Nouveau RDV</span>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-100 p-8 max-w-2xl">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 max-w-2xl">
           <h1 className="text-xl font-bold text-slate-900 mb-6">Créer un rendez-vous</h1>
 
           {erreur && (
-            <div className="bg-red-50 border border-red-100 text-red-700 text-sm px-4 py-3 rounded-lg mb-6">
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 text-sm px-4 py-3 rounded-xl mb-6">
               {erreur}
             </div>
           )}
@@ -79,7 +87,7 @@ export default function NouveauRdv() {
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1 block">Patient *</label>
               <select name="patient_id" value={form.patient_id} onChange={handleChange}
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-800">
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800">
                 <option value="">Choisir un patient</option>
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>{p.prenom} {p.nom}</option>
@@ -90,7 +98,7 @@ export default function NouveauRdv() {
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1 block">Médecin</label>
               <select name="medecin_id" value={form.medecin_id} onChange={handleChange}
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-800">
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800">
                 <option value="">Choisir un médecin</option>
                 {medecins.map((m) => (
                   <option key={m.id} value={m.id}>Dr. {m.prenom} {m.nom}</option>
@@ -101,13 +109,13 @@ export default function NouveauRdv() {
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1 block">Date et heure *</label>
               <input name="date_heure" type="datetime-local" value={form.date_heure} onChange={handleChange}
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-800" />
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800" />
             </div>
 
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1 block">Durée (minutes)</label>
               <select name="duree_minutes" value={form.duree_minutes} onChange={handleChange}
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-800">
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800">
                 <option value="15">15 minutes</option>
                 <option value="30">30 minutes</option>
                 <option value="45">45 minutes</option>
@@ -118,18 +126,18 @@ export default function NouveauRdv() {
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1 block">Motif</label>
               <textarea name="motif" value={form.motif} onChange={handleChange} rows={3}
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-800"
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800"
                 placeholder="Consultation générale, suivi tension..." />
             </div>
           </div>
 
           <div className="flex gap-4 mt-8">
             <button onClick={handleSubmit} disabled={loading}
-              className="bg-blue-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium">
+              className="bg-blue-800 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
               {loading ? 'Enregistrement...' : 'Créer le RDV'}
             </button>
             <a href="/dashboard/rendez-vous"
-              className="border border-slate-200 text-slate-600 px-6 py-2.5 rounded-lg text-sm font-medium">
+              className="border border-slate-200 text-slate-600 px-6 py-2.5 rounded-xl text-sm font-medium">
               Annuler
             </a>
           </div>
