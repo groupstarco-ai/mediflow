@@ -3,13 +3,38 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
+const MAX_TENTATIVES = 3
+const DUREE_BLOCAGE = 30 * 60 * 1000
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const verifierBlocage = () => {
+    const bloque = localStorage.getItem('mediflow_bloque')
+    const tentatives = parseInt(localStorage.getItem('mediflow_tentatives') || '0')
+    const tempsBlocage = parseInt(localStorage.getItem('mediflow_temps_blocage') || '0')
+
+    if (bloque && Date.now() < tempsBlocage + DUREE_BLOCAGE) {
+      const restant = Math.ceil((tempsBlocage + DUREE_BLOCAGE - Date.now()) / 60000)
+      setError(`Compte bloqué. Réessayez dans ${restant} minute(s).`)
+      return true
+    }
+
+    if (bloque && Date.now() >= tempsBlocage + DUREE_BLOCAGE) {
+      localStorage.removeItem('mediflow_bloque')
+      localStorage.removeItem('mediflow_tentatives')
+      localStorage.removeItem('mediflow_temps_blocage')
+    }
+
+    return false
+  }
+
   const handleLogin = async () => {
+    if (verifierBlocage()) return
+
     setLoading(true)
     setError('')
 
@@ -19,10 +44,24 @@ export default function LoginPage() {
     })
 
     if (authError) {
-      setError('Email ou mot de passe incorrect')
+      const tentatives = parseInt(localStorage.getItem('mediflow_tentatives') || '0') + 1
+      localStorage.setItem('mediflow_tentatives', tentatives.toString())
+
+      if (tentatives >= MAX_TENTATIVES) {
+        localStorage.setItem('mediflow_bloque', 'true')
+        localStorage.setItem('mediflow_temps_blocage', Date.now().toString())
+        setError('Trop de tentatives échouées. Compte bloqué 30 minutes.')
+      } else {
+        setError(`Email ou mot de passe incorrect. ${MAX_TENTATIVES - tentatives} tentative(s) restante(s).`)
+      }
+
       setLoading(false)
       return
     }
+
+    localStorage.removeItem('mediflow_tentatives')
+    localStorage.removeItem('mediflow_bloque')
+    localStorage.removeItem('mediflow_temps_blocage')
 
     const { data: utilisateur } = await supabase
       .from('utilisateurs')
