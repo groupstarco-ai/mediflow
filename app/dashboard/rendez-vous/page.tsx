@@ -10,19 +10,28 @@ export default function RendezVous() {
   const [recherche, setRecherche] = useState('')
   const [filtre, setFiltre] = useState('tous')
 
+  const chargerRdvs = async () => {
+    const { data } = await supabase
+      .from('rendez_vous')
+      .select('*, patients(nom, prenom), medecins(nom, prenom)')
+      .order('date_heure', { ascending: true })
+    setRdvs(data || [])
+    setLoading(false)
+  }
+
   useEffect(() => {
-    const getRdvs = async () => {
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
-      const { data } = await supabase
-        .from('rendez_vous')
-        .select('*, patients(nom, prenom), medecins(nom, prenom)')
-        .order('date_heure', { ascending: true })
-      setRdvs(data || [])
-      setLoading(false)
+      chargerRdvs()
     }
-    getRdvs()
+    init()
   }, [])
+
+  const changerStatut = async (id: string, nouveauStatut: string) => {
+    await supabase.from('rendez_vous').update({ statut: nouveauStatut }).eq('id', id)
+    chargerRdvs()
+  }
 
   const rdvFiltres = rdvs.filter(r => {
     const matchRecherche = `${r.patients?.prenom} ${r.patients?.nom} ${r.motif}`.toLowerCase().includes(recherche.toLowerCase())
@@ -37,6 +46,28 @@ export default function RendezVous() {
     termine: { label: 'Terminé', bg: 'bg-slate-50', text: 'text-slate-600', dot: 'bg-slate-400' },
     annule: { label: 'Annulé', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-400' },
     absent: { label: 'Absent', bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-400' },
+  }
+
+  const actionsParStatut: any = {
+    planifie: [
+      { label: '✅ Confirmer', statut: 'confirme', style: 'bg-green-50 text-green-700 hover:bg-green-100' },
+      { label: '❌ Annuler', statut: 'annule', style: 'bg-red-50 text-red-700 hover:bg-red-100' },
+    ],
+    confirme: [
+      { label: '▶️ Démarrer', statut: 'en_cours', style: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' },
+      { label: '❌ Annuler', statut: 'annule', style: 'bg-red-50 text-red-700 hover:bg-red-100' },
+      { label: '🚶 Absent', statut: 'absent', style: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
+    ],
+    en_cours: [
+      { label: '🏁 Terminer', statut: 'termine', style: 'bg-slate-50 text-slate-700 hover:bg-slate-100' },
+    ],
+    termine: [],
+    annule: [
+      { label: '🔄 Replanifier', statut: 'planifie', style: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
+    ],
+    absent: [
+      { label: '🔄 Replanifier', statut: 'planifie', style: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
+    ],
   }
 
   const stats = {
@@ -104,13 +135,10 @@ export default function RendezVous() {
           />
           <div className="flex gap-2">
             {['tous', 'planifie', 'confirme', 'en_cours', 'termine', 'annule'].map((s) => (
-              <button
-                key={s}
-                onClick={() => setFiltre(s)}
+              <button key={s} onClick={() => setFiltre(s)}
                 className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
                   filtre === s ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
+                }`}>
                 {s === 'tous' ? 'Tous' : statutConfig[s]?.label}
               </button>
             ))}
@@ -137,11 +165,13 @@ export default function RendezVous() {
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date et heure</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Motif</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {rdvFiltres.map((rdv) => {
                   const s = statutConfig[rdv.statut] || statutConfig.planifie
+                  const actions = actionsParStatut[rdv.statut] || []
                   return (
                     <tr key={rdv.id} className="border-b border-slate-50 hover:bg-blue-50 transition-colors">
                       <td className="px-6 py-4">
@@ -171,6 +201,19 @@ export default function RendezVous() {
                           <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`}></span>
                           {s.label}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-1.5 flex-wrap">
+                          {actions.map((action: any) => (
+                            <button
+                              key={action.statut}
+                              onClick={() => changerStatut(rdv.id, action.statut)}
+                              className={`text-xs px-2.5 py-1.5 rounded-lg font-medium transition-colors ${action.style}`}
+                            >
+                              {action.label}
+                            </button>
+                          ))}
+                        </div>
                       </td>
                     </tr>
                   )
