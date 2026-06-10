@@ -2,11 +2,26 @@
   "name": "mediflow",
   "version": "0.1.0",
   "private": true,
+  "main": "electron.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "electron": "electron .",
+    "electron-build": "electron-builder build --win"
+  },
+  "build": {
+    "appId": "com.mediflow.app",
+    "productName": "MediFlow",
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon-192x192.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -21,6 +36,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",
