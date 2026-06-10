@@ -15,28 +15,12 @@ export default function DetailPatient({ params }: { params: Promise<{ id: string
     const charger = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
-
-      const { data: p } = await supabase
-        .from('patients')
-        .select('*')
-        .eq('id', id)
-        .single()
+      const { data: p } = await supabase.from('patients').select('*').eq('id', id).single()
       setPatient(p)
-
-      const { data: d } = await supabase
-        .from('dossiers_medicaux')
-        .select('*, medecins(nom, prenom)')
-        .eq('patient_id', id)
-        .order('date_consultation', { ascending: false })
+      const { data: d } = await supabase.from('dossiers_medicaux').select('*, medecins(nom, prenom)').eq('patient_id', id).order('date_consultation', { ascending: false })
       setDossiers(d || [])
-
-      const { data: r } = await supabase
-        .from('rendez_vous')
-        .select('*, medecins(nom, prenom)')
-        .eq('patient_id', id)
-        .order('date_heure', { ascending: false })
+      const { data: r } = await supabase.from('rendez_vous').select('*, medecins(nom, prenom)').eq('patient_id', id).order('date_heure', { ascending: false })
       setRdvs(r || [])
-
       setLoading(false)
     }
     charger()
@@ -45,9 +29,7 @@ export default function DetailPatient({ params }: { params: Promise<{ id: string
   if (loading) return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
-      <main className="flex-1 px-8 py-6">
-        <p className="text-slate-400">Chargement...</p>
-      </main>
+      <main className="flex-1 px-8 py-6"><p className="text-slate-400">Chargement...</p></main>
     </div>
   )
 
@@ -56,12 +38,16 @@ export default function DetailPatient({ params }: { params: Promise<{ id: string
       <Sidebar />
       <main className="flex-1 px-8 py-6">
 
-        <div className="flex items-center gap-4 mb-8">
-          <a href="/dashboard/patients" className="text-slate-400 hover:text-slate-600 text-sm">
-            Patients
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <a href="/dashboard/patients" className="text-slate-400 hover:text-slate-600 text-sm">Patients</a>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-800 text-sm font-medium">{patient?.prenom} {patient?.nom}</span>
+          </div>
+          <a href={`/dashboard/patients/${id}/modifier`}
+            className="bg-blue-800 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
+            ✏️ Modifier
           </a>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-800 text-sm font-medium">{patient?.prenom} {patient?.nom}</span>
         </div>
 
         <div className="grid grid-cols-3 gap-6 mb-6">
