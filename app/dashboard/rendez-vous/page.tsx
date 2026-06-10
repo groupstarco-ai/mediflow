@@ -203,7 +203,7 @@ export default function RendezVous() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex gap-1.5 flex-wrap">
+                        <div className="flex gap-1.5 flex-wrap items-center">
                           {actions.map((action: any) => (
                             <button
                               key={action.statut}
@@ -213,6 +213,10 @@ export default function RendezVous() {
                               {action.label}
                             </button>
                           ))}
+                          <a href={`/dashboard/rendez-vous/${rdv.id}/modifier`}
+                            className="text-xs px-2.5 py-1.5 rounded-lg font-medium bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors">
+                            ✏️ Modifier
+                          </a>
                         </div>
                       </td>
                     </tr>
