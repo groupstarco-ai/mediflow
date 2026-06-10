@@ -120,6 +120,7 @@ export default function Dossiers() {
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Diagnostic</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Confidentialité</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -156,6 +157,12 @@ export default function Dossiers() {
                       ) : (
                         <span className="bg-red-50 text-red-700 text-xs px-3 py-1 rounded-full font-medium">🔒 Confidentiel</span>
                       )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <a href={`/dashboard/dossiers/${d.id}/modifier`}
+                        className="bg-slate-50 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-slate-100 transition-colors">
+                        ✏️ Modifier
+                      </a>
                     </td>
                   </tr>
                 ))}
