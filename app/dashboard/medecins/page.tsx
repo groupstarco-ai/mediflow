@@ -66,10 +66,16 @@ export default function Medecins() {
             <h1 className="text-2xl font-bold text-slate-900">Médecins</h1>
             <p className="text-slate-500 text-sm mt-1">{medecins.length} médecin(s) enregistré(s)</p>
           </div>
-          <button onClick={() => setAfficherForm(!afficherForm)}
-            className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
-            + Nouveau médecin
-          </button>
+          <div className="flex gap-3">
+            <a href="/dashboard/medecins/disponibilites"
+              className="border border-blue-200 text-blue-700 bg-blue-50 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors">
+              📅 Gérer les disponibilités
+            </a>
+            <button onClick={() => setAfficherForm(!afficherForm)}
+              className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
+              + Nouveau médecin
+            </button>
+          </div>
         </div>
 
         {afficherForm && (
@@ -169,6 +175,12 @@ export default function Medecins() {
                       <span>✉️</span> {m.email}
                     </p>
                   )}
+                  <div className="mt-2 pt-2 border-t border-slate-100">
+                    <a href="/dashboard/medecins/disponibilites"
+                      className="text-xs text-blue-700 hover:underline flex items-center gap-1">
+                      📅 Voir les disponibilités →
+                    </a>
+                  </div>
                 </div>
               </div>
             ))
