@@ -13,6 +13,7 @@ export default function Dashboard() {
     rdvAnnules: 0,
   })
   const [rdvs, setRdvs] = useState<any[]>([])
+  const [urgentsEnAttente, setUrgentsEnAttente] = useState<any[]>([])
   const [heure, setHeure] = useState('')
 
   useEffect(() => {
@@ -49,8 +50,17 @@ export default function Dashboard() {
         .from('rendez_vous')
         .select('*, patients(nom, prenom)')
         .gte('date_heure', new Date().toISOString())
+        .not('statut', 'in', '("annule","termine")')
         .order('date_heure', { ascending: true })
         .limit(5)
+
+      const il_y_a_30min = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+      const { data: urgents } = await supabase
+        .from('rendez_vous')
+        .select('*, patients(nom, prenom)')
+        .eq('priorite', 'urgent')
+        .in('statut', ['planifie', 'confirme'])
+        .lte('date_heure', il_y_a_30min)
 
       setStats({
         patients: totalPatients || 0,
@@ -59,6 +69,7 @@ export default function Dashboard() {
         rdvAnnules: rdvAnnules || 0,
       })
       setRdvs(prochains || [])
+      setUrgentsEnAttente(urgents || [])
     }
     charger()
   }, [])
@@ -67,12 +78,17 @@ export default function Dashboard() {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   })
 
+  const minutesAttente = (dateHeure: string) => {
+    const diff = Date.now() - new Date(dateHeure).getTime()
+    return Math.floor(diff / 60000)
+  }
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
       <main className="flex-1 px-8 py-6">
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
               {heure}, {user?.email?.split('@')[0]} 👋
@@ -84,6 +100,44 @@ export default function Dashboard() {
             + Nouveau RDV
           </a>
         </div>
+
+        {urgentsEnAttente.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-2xl animate-pulse">🚨</span>
+              <div>
+                <p className="text-red-700 font-semibold text-sm">
+                  {urgentsEnAttente.length} patient(s) urgent(s) en attente depuis plus de 30 minutes
+                </p>
+                <p className="text-red-500 text-xs">Ces patients nécessitent une attention immédiate</p>
+              </div>
+              <a href="/dashboard/rendez-vous"
+                className="ml-auto bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-medium hover:bg-red-700 transition-colors">
+                Voir les RDV →
+              </a>
+            </div>
+            <div className="flex flex-col gap-2">
+              {urgentsEnAttente.map((rdv) => (
+                <div key={rdv.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-red-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center text-red-700 font-semibold text-xs">
+                      {rdv.patients?.prenom?.[0]}{rdv.patients?.nom?.[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{rdv.patients?.prenom} {rdv.patients?.nom}</p>
+                      <p className="text-xs text-slate-500">{rdv.motif || 'Urgence'}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                      ⏱ {minutesAttente(rdv.date_heure)} min d'attente
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
@@ -134,7 +188,9 @@ export default function Dashboard() {
             ) : (
               <div className="flex flex-col gap-3">
                 {rdvs.map((rdv) => (
-                  <div key={rdv.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div key={rdv.id} className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${
+                    rdv.priorite === 'urgent' ? 'bg-red-50 border border-red-100' : 'hover:bg-slate-50'
+                  }`}>
                     <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-800 font-semibold text-sm flex-shrink-0">
                       {rdv.patients?.prenom?.[0]}{rdv.patients?.nom?.[0]}
                     </div>
@@ -150,7 +206,12 @@ export default function Dashboard() {
                         {new Date(rdv.date_heure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{rdv.statut}</span>
+                    <div className="flex flex-col gap-1 items-end">
+                      <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{rdv.statut}</span>
+                      {rdv.priorite === 'urgent' && (
+                        <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">🚨 Urgent</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -179,6 +240,11 @@ export default function Dashboard() {
                 className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
                 <span className="text-xl">💰</span>
                 <span className="text-sm font-medium text-slate-700">Facturation</span>
+              </a>
+              <a href="/dashboard/medecins/disponibilites"
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <span className="text-xl">📅</span>
+                <span className="text-sm font-medium text-slate-700">Disponibilités</span>
               </a>
               <a href="/dashboard/audit"
                 className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
