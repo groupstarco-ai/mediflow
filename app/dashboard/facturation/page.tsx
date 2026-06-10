@@ -27,6 +27,11 @@ export default function Facturation() {
       if (!user) { window.location.href = '/login'; return }
       const { data: p } = await supabase.from('patients').select('id, nom, prenom')
       setPatients(p || [])
+      const { data: f } = await supabase
+        .from('factures')
+        .select('*, patients(nom, prenom)')
+        .order('created_at', { ascending: false })
+      setFactures(f || [])
       setLoading(false)
     }
     charger()
@@ -44,23 +49,31 @@ export default function Facturation() {
     setSaving(true)
     setErreur('')
     const noFacture = `FAC-${Date.now()}`
-    const nouvelleFacture = {
+    const { error } = await supabase.from('factures').insert([{
       id: noFacture,
-      patient: patients.find(p => p.id === form.patient_id),
+      patient_id: form.patient_id,
       montant: parseFloat(form.montant),
       description: form.description,
       statut: form.statut,
       mode_paiement: form.mode_paiement,
-      date: new Date().toLocaleDateString('fr-FR'),
+    }])
+    if (error) {
+      setErreur('Erreur lors de la création de la facture.')
+      setSaving(false)
+      return
     }
-    setFactures([nouvelleFacture, ...factures])
+    const { data: f } = await supabase
+      .from('factures')
+      .select('*, patients(nom, prenom)')
+      .order('created_at', { ascending: false })
+    setFactures(f || [])
     setForm({ patient_id: '', montant: '', description: '', statut: 'en_attente', mode_paiement: 'especes' })
     setAfficherForm(false)
     setSaving(false)
   }
 
   const facturesFiltrees = factures.filter(f => {
-    const matchRecherche = `${f.patient?.prenom} ${f.patient?.nom} ${f.description}`.toLowerCase().includes(recherche.toLowerCase())
+    const matchRecherche = `${f.patients?.prenom} ${f.patients?.nom} ${f.description}`.toLowerCase().includes(recherche.toLowerCase())
     const matchFiltre = filtre === 'tous' || f.statut === filtre
     return matchRecherche && matchFiltre
   })
@@ -227,9 +240,9 @@ export default function Facturation() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center text-blue-800 font-semibold text-xs">
-                          {f.patient?.prenom?.[0]}{f.patient?.nom?.[0]}
+                          {f.patients?.prenom?.[0]}{f.patients?.nom?.[0]}
                         </div>
-                        <span className="text-sm text-slate-700">{f.patient?.prenom} {f.patient?.nom}</span>
+                        <span className="text-sm text-slate-700">{f.patients?.prenom} {f.patients?.nom}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">{f.description}</td>
@@ -241,7 +254,9 @@ export default function Facturation() {
                         <span className="bg-slate-50 text-slate-600 text-xs px-2 py-1 rounded-full">💵 Espèces</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">{f.date}</td>
+                    <td className="px-6 py-4 text-sm text-slate-500">
+                      {new Date(f.created_at).toLocaleDateString('fr-FR')}
+                    </td>
                     <td className="px-6 py-4">
                       {f.statut === 'paye' ? (
                         <span className="bg-green-50 text-green-700 text-xs px-3 py-1 rounded-full font-medium">✅ Payé</span>
