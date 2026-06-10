@@ -1,16 +1,30 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getUserRole, getPermissions } from '@/lib/permissions'
+
 export default function Sidebar() {
   const [pathname, setPathname] = useState('')
   const [user, setUser] = useState<any>(null)
+  const [role, setRole] = useState<string>('')
+  const [permissions, setPermissions] = useState<any>({})
+
   useEffect(() => {
     setPathname(window.location.pathname)
-    const getUser = async () => {
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      const r = await getUserRole()
+      if (r) {
+        setRole(r)
+        if (r !== 'administrateur') {
+          const perms = await getPermissions(r)
+          setPermissions(perms)
+        }
+      }
     }
-    getUser()
+    init()
+
     let timer: ReturnType<typeof setTimeout>
     const resetTimer = () => {
       clearTimeout(timer)
@@ -27,17 +41,39 @@ export default function Sidebar() {
       events.forEach((e) => window.removeEventListener(e, resetTimer))
     }
   }, [])
+
+  const peutVoir = (module: string) => {
+    if (role === 'administrateur') return true
+    return permissions[module]?.peut_voir ?? false
+  }
+
+  const roleConfig: any = {
+    administrateur: { label: 'Administrateur', couleur: 'text-blue-300', icone: '🛡️' },
+    medecin: { label: 'Médecin', couleur: 'text-green-300', icone: '🩺' },
+    infirmier: { label: 'Infirmier', couleur: 'text-purple-300', icone: '💉' },
+    gestionnaire: { label: 'Gestionnaire', couleur: 'text-yellow-300', icone: '📋' },
+    patient: { label: 'Patient', couleur: 'text-slate-300', icone: '👤' },
+  }
+
   const menus = [
-    { nom: 'Tableau de bord', icone: '📊', lien: '/dashboard' },
-    { nom: 'Patients', icone: '👤', lien: '/dashboard/patients' },
-    { nom: 'Rendez-vous', icone: '📅', lien: '/dashboard/rendez-vous' },
-    { nom: 'Médecins', icone: '🩺', lien: '/dashboard/medecins' },
-    { nom: 'Dossiers médicaux', icone: '📋', lien: '/dashboard/dossiers' },
-    { nom: 'Facturation', icone: '💰', lien: '/dashboard/facturation' },
-    { nom: 'Statistiques', icone: '📈', lien: '/dashboard/statistiques' },
-    { nom: 'Journal d\'audit', icone: '🔍', lien: '/dashboard/audit' },
-    { nom: 'Paramètres', icone: '⚙️', lien: '/dashboard/parametres' },
+    { nom: 'Tableau de bord', icone: '📊', lien: '/dashboard', module: 'dashboard' },
+    { nom: 'Patients', icone: '👤', lien: '/dashboard/patients', module: 'patients' },
+    { nom: 'Rendez-vous', icone: '📅', lien: '/dashboard/rendez-vous', module: 'rendez_vous' },
+    { nom: 'Médecins', icone: '🩺', lien: '/dashboard/medecins', module: 'medecins' },
+    { nom: 'Dossiers médicaux', icone: '📋', lien: '/dashboard/dossiers', module: 'dossiers' },
+    { nom: 'Facturation', icone: '💰', lien: '/dashboard/facturation', module: 'facturation' },
+    { nom: 'Statistiques', icone: '📈', lien: '/dashboard/statistiques', module: 'statistiques' },
+    { nom: 'Journal d\'audit', icone: '🔍', lien: '/dashboard/audit', module: 'audit' },
+    { nom: 'Paramètres', icone: '⚙️', lien: '/dashboard/parametres', module: 'parametres' },
   ]
+
+  const menusFiltres = menus.filter(m => {
+    if (m.module === 'dashboard' || m.module === 'audit') return true
+    return peutVoir(m.module)
+  })
+
+  const rc = roleConfig[role] || roleConfig.gestionnaire
+
   return (
     <aside className="w-60 min-h-screen bg-blue-950 flex flex-col">
       <div className="flex items-center gap-3 px-5 py-6">
@@ -53,7 +89,7 @@ export default function Sidebar() {
         <div className="h-px bg-blue-800"></div>
       </div>
       <nav className="flex-1 px-3 flex flex-col gap-1">
-        {menus.map((item) => (
+        {menusFiltres.map((item) => (
           <a key={item.lien}
             href={item.lien}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
@@ -72,6 +108,10 @@ export default function Sidebar() {
       </div>
       <div className="px-3 pb-4">
         <div className="bg-blue-900 rounded-xl p-3 mb-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span>{rc.icone}</span>
+            <span className={`text-xs font-medium ${rc.couleur}`}>{rc.label}</span>
+          </div>
           <p className="text-xs text-blue-300 mb-0.5">Connecté en tant que</p>
           <p className="text-sm text-white font-medium truncate">{user?.email}</p>
         </div>
