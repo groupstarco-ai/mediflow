@@ -9,6 +9,7 @@ export default function Facturation() {
   const [loading, setLoading] = useState(true)
   const [afficherForm, setAfficherForm] = useState(false)
   const [patients, setPatients] = useState<any[]>([])
+  const [structure, setStructure] = useState<any>(null)
   const [recherche, setRecherche] = useState('')
   const [filtre, setFiltre] = useState('tous')
   const [form, setForm] = useState({
@@ -27,11 +28,10 @@ export default function Facturation() {
       if (!user) { window.location.href = '/login'; return }
       const { data: p } = await supabase.from('patients').select('id, nom, prenom')
       setPatients(p || [])
-      const { data: f } = await supabase
-        .from('factures')
-        .select('*, patients(nom, prenom)')
-        .order('created_at', { ascending: false })
+      const { data: f } = await supabase.from('factures').select('*, patients(nom, prenom)').order('created_at', { ascending: false })
       setFactures(f || [])
+      const { data: s } = await supabase.from('structures').select('*').limit(1).single()
+      setStructure(s)
       setLoading(false)
     }
     charger()
@@ -57,19 +57,96 @@ export default function Facturation() {
       statut: form.statut,
       mode_paiement: form.mode_paiement,
     }])
-    if (error) {
-      setErreur('Erreur lors de la création de la facture.')
-      setSaving(false)
-      return
-    }
-    const { data: f } = await supabase
-      .from('factures')
-      .select('*, patients(nom, prenom)')
-      .order('created_at', { ascending: false })
+    if (error) { setErreur('Erreur lors de la création.'); setSaving(false); return }
+    const { data: f } = await supabase.from('factures').select('*, patients(nom, prenom)').order('created_at', { ascending: false })
     setFactures(f || [])
     setForm({ patient_id: '', montant: '', description: '', statut: 'en_attente', mode_paiement: 'especes' })
     setAfficherForm(false)
     setSaving(false)
+  }
+
+  const imprimerFacture = (facture: any) => {
+    const contenu = `
+      <html>
+      <head>
+        <title>Facture ${facture.id}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; }
+          .header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 2px solid #1e3a5f; padding-bottom: 20px; }
+          .structure-info h1 { font-size: 22px; color: #1e3a5f; margin: 0 0 4px; }
+          .structure-info p { margin: 2px 0; font-size: 13px; color: #64748b; }
+          .facture-info { text-align: right; }
+          .facture-info h2 { font-size: 28px; color: #1e3a5f; margin: 0; }
+          .facture-info p { margin: 2px 0; font-size: 13px; color: #64748b; }
+          .section { margin: 20px 0; }
+          .section h3 { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+          .section p { font-size: 15px; font-weight: 500; margin: 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+          th { background: #f1f5f9; text-align: left; padding: 10px 14px; font-size: 12px; color: #64748b; text-transform: uppercase; }
+          td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+          .total-row { font-weight: bold; font-size: 16px; background: #f8fafc; }
+          .footer { margin-top: 60px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+          .statut { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+          .statut.paye { background: #dcfce7; color: #166534; }
+          .statut.en_attente { background: #fef9c3; color: #854d0e; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="structure-info">
+            <h1>${structure?.nom || 'MediFlow'}</h1>
+            <p>${structure?.type || ''}</p>
+            <p>${structure?.adresse || ''}</p>
+            <p>Tél: ${structure?.telephone || ''}</p>
+            <p>${structure?.email || ''}</p>
+          </div>
+          <div class="facture-info">
+            <h2>FACTURE</h2>
+            <p><strong>N°</strong> ${facture.id}</p>
+            <p><strong>Date:</strong> ${new Date(facture.created_at).toLocaleDateString('fr-FR')}</p>
+            <p><span class="statut ${facture.statut}">${facture.statut === 'paye' ? 'PAYÉ' : 'EN ATTENTE'}</span></p>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Patient</h3>
+          <p>${facture.patients?.prenom} ${facture.patients?.nom}</p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Mode de paiement</th>
+              <th style="text-align:right">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${facture.description}</td>
+              <td>${facture.mode_paiement === 'mobile_money' ? 'Mobile Money' : 'Espèces'}</td>
+              <td style="text-align:right">${facture.montant.toLocaleString()} FCFA</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="2" style="text-align:right">TOTAL</td>
+              <td style="text-align:right">${facture.montant.toLocaleString()} FCFA</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>Merci de votre confiance — ${structure?.nom || 'MediFlow'}</p>
+          <p>Document généré par MediFlow</p>
+        </div>
+      </body>
+      </html>
+    `
+    const fenetre = window.open('', '_blank')
+    if (fenetre) {
+      fenetre.document.write(contenu)
+      fenetre.document.close()
+      fenetre.print()
+    }
   }
 
   const facturesFiltrees = factures.filter(f => {
@@ -231,6 +308,7 @@ export default function Facturation() {
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Mode</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -263,6 +341,13 @@ export default function Facturation() {
                       ) : (
                         <span className="bg-yellow-50 text-yellow-700 text-xs px-3 py-1 rounded-full font-medium">⏳ En attente</span>
                       )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={() => imprimerFacture(f)}
+                        className="bg-slate-50 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-slate-100 transition-colors">
+                        🖨️ Imprimer
+                      </button>
                     </td>
                   </tr>
                 ))}
