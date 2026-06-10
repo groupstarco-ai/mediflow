@@ -79,6 +79,20 @@ export default function Parametres() {
           </button>
         </div>
 
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-xl">🏥</div>
+            <div>
+              <p className="text-sm font-medium text-slate-800">Informations de la structure</p>
+              <p className="text-xs text-slate-500">Nom, adresse, téléphone — apparaît sur les factures</p>
+            </div>
+          </div>
+          <a href="/dashboard/parametres/structure"
+            className="bg-blue-800 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors">
+            Configurer →
+          </a>
+        </div>
+
         <div className="grid grid-cols-5 gap-3 mb-6">
           {Object.entries(roleConfig).map(([role, config]: any) => (
             <div key={role} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 text-center">
@@ -206,7 +220,6 @@ export default function Parametres() {
             </table>
           )}
         </div>
-
       </main>
     </div>
   )
