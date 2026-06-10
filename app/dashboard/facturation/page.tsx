@@ -71,23 +71,22 @@ export default function Facturation() {
       <head>
         <title>Facture ${facture.id}</title>
         <style>
-          @page { size: A5; margin: 10mm; }
-          body { font-family: Arial, sans-serif; padding: 15px; color: #1e293b; width: 128mm; margin: 0 auto; font-size: 11px; }
-          .header { display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 2px solid #1e3a5f; padding-bottom: 10px; }
-          .structure-info h1 { font-size: 15px; color: #1e3a5f; margin: 0 0 3px; }
-          .structure-info p { margin: 1px 0; font-size: 10px; color: #64748b; }
+          body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; }
+          .header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 2px solid #1e3a5f; padding-bottom: 20px; }
+          .structure-info h1 { font-size: 22px; color: #1e3a5f; margin: 0 0 4px; }
+          .structure-info p { margin: 2px 0; font-size: 13px; color: #64748b; }
           .facture-info { text-align: right; }
-          .facture-info h2 { font-size: 20px; color: #1e3a5f; margin: 0; }
-          .facture-info p { margin: 1px 0; font-size: 10px; color: #64748b; }
-          .section { margin: 10px 0; }
-          .section h3 { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
-          .section p { font-size: 12px; font-weight: 500; margin: 0; }
-          table { width: 100%; border-collapse: collapse; margin-top: 14px; }
-          th { background: #f1f5f9; text-align: left; padding: 6px 8px; font-size: 9px; color: #64748b; text-transform: uppercase; }
-          td { padding: 7px 8px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
-          .total-row { font-weight: bold; font-size: 12px; background: #f8fafc; }
-          .footer { margin-top: 24px; text-align: center; font-size: 9px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; }
-          .statut { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 600; }
+          .facture-info h2 { font-size: 28px; color: #1e3a5f; margin: 0; }
+          .facture-info p { margin: 2px 0; font-size: 13px; color: #64748b; }
+          .section { margin: 20px 0; }
+          .section h3 { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+          .section p { font-size: 15px; font-weight: 500; margin: 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+          th { background: #f1f5f9; text-align: left; padding: 10px 14px; font-size: 12px; color: #64748b; text-transform: uppercase; }
+          td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+          .total-row { font-weight: bold; font-size: 16px; background: #f8fafc; }
+          .footer { margin-top: 60px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+          .statut { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
           .statut.paye { background: #dcfce7; color: #166534; }
           .statut.en_attente { background: #fef9c3; color: #854d0e; }
         </style>
@@ -108,10 +107,12 @@ export default function Facturation() {
             <p><span class="statut ${facture.statut}">${facture.statut === 'paye' ? 'PAYÉ' : 'EN ATTENTE'}</span></p>
           </div>
         </div>
+
         <div class="section">
           <h3>Patient</h3>
           <p>${facture.patients?.prenom} ${facture.patients?.nom}</p>
         </div>
+
         <table>
           <thead>
             <tr>
@@ -132,6 +133,7 @@ export default function Facturation() {
             </tr>
           </tbody>
         </table>
+
         <div class="footer">
           <p>Merci de votre confiance — ${structure?.nom || 'MediFlow'}</p>
           <p>Document généré par MediFlow</p>
@@ -160,6 +162,7 @@ export default function Facturation() {
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
       <main className="flex-1 px-8 py-6">
+
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Facturation</h1>
@@ -352,6 +355,7 @@ export default function Facturation() {
             </table>
           )}
         </div>
+
       </main>
     </div>
   )
