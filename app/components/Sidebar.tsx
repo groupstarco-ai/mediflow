@@ -1,12 +1,9 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-
 export default function Sidebar() {
   const [pathname, setPathname] = useState('')
   const [user, setUser] = useState<any>(null)
-
   useEffect(() => {
     setPathname(window.location.pathname)
     const getUser = async () => {
@@ -14,7 +11,6 @@ export default function Sidebar() {
       setUser(user)
     }
     getUser()
-
     let timer: ReturnType<typeof setTimeout>
     const resetTimer = () => {
       clearTimeout(timer)
@@ -31,7 +27,6 @@ export default function Sidebar() {
       events.forEach((e) => window.removeEventListener(e, resetTimer))
     }
   }, [])
-
   const menus = [
     { nom: 'Tableau de bord', icone: '📊', lien: '/dashboard' },
     { nom: 'Patients', icone: '👤', lien: '/dashboard/patients' },
@@ -39,10 +34,10 @@ export default function Sidebar() {
     { nom: 'Médecins', icone: '🩺', lien: '/dashboard/medecins' },
     { nom: 'Dossiers médicaux', icone: '📋', lien: '/dashboard/dossiers' },
     { nom: 'Facturation', icone: '💰', lien: '/dashboard/facturation' },
+    { nom: 'Statistiques', icone: '📈', lien: '/dashboard/statistiques' },
     { nom: 'Journal d\'audit', icone: '🔍', lien: '/dashboard/audit' },
     { nom: 'Paramètres', icone: '⚙️', lien: '/dashboard/parametres' },
   ]
-
   return (
     <aside className="w-60 min-h-screen bg-blue-950 flex flex-col">
       <div className="flex items-center gap-3 px-5 py-6">
@@ -54,15 +49,12 @@ export default function Sidebar() {
           <div className="text-blue-300 text-xs mt-0.5">Gestion médicale</div>
         </div>
       </div>
-
       <div className="px-3 mb-4">
         <div className="h-px bg-blue-800"></div>
       </div>
-
       <nav className="flex-1 px-3 flex flex-col gap-1">
         {menus.map((item) => (
-          
-            <a key={item.lien}
+          <a key={item.lien}
             href={item.lien}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
               pathname === item.lien
@@ -75,11 +67,9 @@ export default function Sidebar() {
           </a>
         ))}
       </nav>
-
       <div className="px-3 mb-3">
         <div className="h-px bg-blue-800"></div>
       </div>
-
       <div className="px-3 pb-4">
         <div className="bg-blue-900 rounded-xl p-3 mb-3">
           <p className="text-xs text-blue-300 mb-0.5">Connecté en tant que</p>
