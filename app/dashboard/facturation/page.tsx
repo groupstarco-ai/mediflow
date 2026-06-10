@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '../../components/Sidebar'
+import ProtegerPage from '../../components/ProtegerPage'
 
 export default function Facturation() {
   const [factures, setFactures] = useState<any[]>([])
@@ -71,22 +72,23 @@ export default function Facturation() {
       <head>
         <title>Facture ${facture.id}</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; }
-          .header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 2px solid #1e3a5f; padding-bottom: 20px; }
-          .structure-info h1 { font-size: 22px; color: #1e3a5f; margin: 0 0 4px; }
-          .structure-info p { margin: 2px 0; font-size: 13px; color: #64748b; }
+          @page { size: A5; margin: 10mm; }
+          body { font-family: Arial, sans-serif; padding: 15px; color: #1e293b; width: 128mm; margin: 0 auto; font-size: 11px; }
+          .header { display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 2px solid #1e3a5f; padding-bottom: 10px; }
+          .structure-info h1 { font-size: 15px; color: #1e3a5f; margin: 0 0 3px; }
+          .structure-info p { margin: 1px 0; font-size: 10px; color: #64748b; }
           .facture-info { text-align: right; }
-          .facture-info h2 { font-size: 28px; color: #1e3a5f; margin: 0; }
-          .facture-info p { margin: 2px 0; font-size: 13px; color: #64748b; }
-          .section { margin: 20px 0; }
-          .section h3 { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-          .section p { font-size: 15px; font-weight: 500; margin: 0; }
-          table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-          th { background: #f1f5f9; text-align: left; padding: 10px 14px; font-size: 12px; color: #64748b; text-transform: uppercase; }
-          td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-          .total-row { font-weight: bold; font-size: 16px; background: #f8fafc; }
-          .footer { margin-top: 60px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-          .statut { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+          .facture-info h2 { font-size: 20px; color: #1e3a5f; margin: 0; }
+          .facture-info p { margin: 1px 0; font-size: 10px; color: #64748b; }
+          .section { margin: 10px 0; }
+          .section h3 { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+          .section p { font-size: 12px; font-weight: 500; margin: 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+          th { background: #f1f5f9; text-align: left; padding: 6px 8px; font-size: 9px; color: #64748b; text-transform: uppercase; }
+          td { padding: 7px 8px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
+          .total-row { font-weight: bold; font-size: 12px; background: #f8fafc; }
+          .footer { margin-top: 24px; text-align: center; font-size: 9px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+          .statut { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 600; }
           .statut.paye { background: #dcfce7; color: #166534; }
           .statut.en_attente { background: #fef9c3; color: #854d0e; }
         </style>
@@ -107,12 +109,10 @@ export default function Facturation() {
             <p><span class="statut ${facture.statut}">${facture.statut === 'paye' ? 'PAYÉ' : 'EN ATTENTE'}</span></p>
           </div>
         </div>
-
         <div class="section">
           <h3>Patient</h3>
           <p>${facture.patients?.prenom} ${facture.patients?.nom}</p>
         </div>
-
         <table>
           <thead>
             <tr>
@@ -133,7 +133,6 @@ export default function Facturation() {
             </tr>
           </tbody>
         </table>
-
         <div class="footer">
           <p>Merci de votre confiance — ${structure?.nom || 'MediFlow'}</p>
           <p>Document généré par MediFlow</p>
@@ -159,204 +158,205 @@ export default function Facturation() {
   const totalEnAttente = factures.filter(f => f.statut === 'en_attente').reduce((acc, f) => acc + f.montant, 0)
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-      <main className="flex-1 px-8 py-6">
+    <ProtegerPage module="facturation">
+      <div className="flex min-h-screen bg-slate-50">
+        <Sidebar />
+        <main className="flex-1 px-8 py-6">
 
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Facturation</h1>
-            <p className="text-slate-500 text-sm mt-1">{factures.length} facture(s)</p>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Facturation</h1>
+              <p className="text-slate-500 text-sm mt-1">{factures.length} facture(s)</p>
+            </div>
+            <button onClick={() => setAfficherForm(!afficherForm)}
+              className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
+              + Nouvelle facture
+            </button>
           </div>
-          <button onClick={() => setAfficherForm(!afficherForm)}
-            className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
-            + Nouvelle facture
-          </button>
-        </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-green-600 to-green-500 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-green-100">Total encaissé</p>
-              <span className="text-2xl">💵</span>
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-gradient-to-br from-green-600 to-green-500 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-green-100">Total encaissé</p>
+                <span className="text-2xl">💵</span>
+              </div>
+              <p className="text-2xl font-bold text-white">{totalEncaisse.toLocaleString()} FCFA</p>
+              <p className="text-xs text-green-200 mt-1">{factures.filter(f => f.statut === 'paye').length} facture(s) payée(s)</p>
             </div>
-            <p className="text-2xl font-bold text-white">{totalEncaisse.toLocaleString()} FCFA</p>
-            <p className="text-xs text-green-200 mt-1">{factures.filter(f => f.statut === 'paye').length} facture(s) payée(s)</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-slate-500">En attente</p>
-              <span className="text-2xl">⏳</span>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-slate-500">En attente</p>
+                <span className="text-2xl">⏳</span>
+              </div>
+              <p className="text-2xl font-bold text-yellow-600">{totalEnAttente.toLocaleString()} FCFA</p>
+              <p className="text-xs text-slate-400 mt-1">{factures.filter(f => f.statut === 'en_attente').length} facture(s) en attente</p>
             </div>
-            <p className="text-2xl font-bold text-yellow-600">{totalEnAttente.toLocaleString()} FCFA</p>
-            <p className="text-xs text-slate-400 mt-1">{factures.filter(f => f.statut === 'en_attente').length} facture(s) en attente</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-slate-500">Total factures</p>
-              <span className="text-2xl">🧾</span>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-slate-500">Total factures</p>
+                <span className="text-2xl">🧾</span>
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{factures.length}</p>
+              <p className="text-xs text-slate-400 mt-1">Ce mois</p>
             </div>
-            <p className="text-2xl font-bold text-slate-900">{factures.length}</p>
-            <p className="text-xs text-slate-400 mt-1">Ce mois</p>
           </div>
-        </div>
 
-        {afficherForm && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6 max-w-2xl">
-            <h2 className="text-lg font-semibold text-slate-800 mb-4">Créer une facture</h2>
-            {erreur && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl mb-4">{erreur}</div>}
-            <div className="flex flex-col gap-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">Patient *</label>
-                <select name="patient_id" value={form.patient_id} onChange={handleChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800">
-                  <option value="">Choisir un patient</option>
-                  {patients.map((p) => (
-                    <option key={p.id} value={p.id}>{p.prenom} {p.nom}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">Description *</label>
-                <input name="description" value={form.description} onChange={handleChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800"
-                  placeholder="Consultation générale, analyses..." />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">Montant (FCFA) *</label>
-                <input name="montant" type="number" value={form.montant} onChange={handleChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800"
-                  placeholder="5000" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">Mode de paiement</label>
-                <div className="flex gap-3">
-                  <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${form.mode_paiement === 'especes' ? 'border-blue-800 bg-blue-50' : 'border-slate-200'}`}>
-                    <input type="radio" name="mode_paiement" value="especes" checked={form.mode_paiement === 'especes'} onChange={handleChange} className="hidden" />
-                    <span className="text-xl">💵</span>
-                    <span className="text-sm font-medium text-slate-700">Espèces</span>
-                  </label>
-                  <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${form.mode_paiement === 'mobile_money' ? 'border-blue-800 bg-blue-50' : 'border-slate-200'}`}>
-                    <input type="radio" name="mode_paiement" value="mobile_money" checked={form.mode_paiement === 'mobile_money'} onChange={handleChange} className="hidden" />
-                    <span className="text-xl">📱</span>
-                    <span className="text-sm font-medium text-slate-700">Mobile Money</span>
-                  </label>
+          {afficherForm && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6 max-w-2xl">
+              <h2 className="text-lg font-semibold text-slate-800 mb-4">Créer une facture</h2>
+              {erreur && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl mb-4">{erreur}</div>}
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">Patient *</label>
+                  <select name="patient_id" value={form.patient_id} onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800">
+                    <option value="">Choisir un patient</option>
+                    {patients.map((p) => (
+                      <option key={p.id} value={p.id}>{p.prenom} {p.nom}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">Description *</label>
+                  <input name="description" value={form.description} onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800"
+                    placeholder="Consultation générale, analyses..." />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">Montant (FCFA) *</label>
+                  <input name="montant" type="number" value={form.montant} onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800"
+                    placeholder="5000" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">Mode de paiement</label>
+                  <div className="flex gap-3">
+                    <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${form.mode_paiement === 'especes' ? 'border-blue-800 bg-blue-50' : 'border-slate-200'}`}>
+                      <input type="radio" name="mode_paiement" value="especes" checked={form.mode_paiement === 'especes'} onChange={handleChange} className="hidden" />
+                      <span className="text-xl">💵</span>
+                      <span className="text-sm font-medium text-slate-700">Espèces</span>
+                    </label>
+                    <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${form.mode_paiement === 'mobile_money' ? 'border-blue-800 bg-blue-50' : 'border-slate-200'}`}>
+                      <input type="radio" name="mode_paiement" value="mobile_money" checked={form.mode_paiement === 'mobile_money'} onChange={handleChange} className="hidden" />
+                      <span className="text-xl">📱</span>
+                      <span className="text-sm font-medium text-slate-700">Mobile Money</span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">Statut</label>
+                  <select name="statut" value={form.statut} onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800">
+                    <option value="en_attente">En attente</option>
+                    <option value="paye">Payé</option>
+                  </select>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">Statut</label>
-                <select name="statut" value={form.statut} onChange={handleChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-800">
-                  <option value="en_attente">En attente</option>
-                  <option value="paye">Payé</option>
-                </select>
+              <div className="flex gap-4 mt-6">
+                <button onClick={handleSubmit} disabled={saving}
+                  className="bg-blue-800 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
+                  {saving ? 'Création...' : 'Créer la facture'}
+                </button>
+                <button onClick={() => setAfficherForm(false)}
+                  className="border border-slate-200 text-slate-600 px-6 py-2.5 rounded-xl text-sm font-medium">
+                  Annuler
+                </button>
               </div>
             </div>
-            <div className="flex gap-4 mt-6">
-              <button onClick={handleSubmit} disabled={saving}
-                className="bg-blue-800 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
-                {saving ? 'Création...' : 'Créer la facture'}
-              </button>
-              <button onClick={() => setAfficherForm(false)}
-                className="border border-slate-200 text-slate-600 px-6 py-2.5 rounded-xl text-sm font-medium">
-                Annuler
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm mb-4 px-4 py-3 flex items-center gap-4">
-          <span className="text-slate-400">🔍</span>
-          <input
-            type="text"
-            placeholder="Rechercher par patient ou description..."
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-            className="flex-1 text-sm outline-none text-slate-700 placeholder-slate-400"
-          />
-          <div className="flex gap-2">
-            {['tous', 'en_attente', 'paye'].map((f) => (
-              <button key={f} onClick={() => setFiltre(f)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                  filtre === f ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}>
-                {f === 'tous' ? 'Tous' : f === 'paye' ? '✅ Payé' : '⏳ En attente'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center">
-              <p className="text-4xl mb-3">⏳</p>
-              <p className="text-slate-400 text-sm">Chargement...</p>
-            </div>
-          ) : facturesFiltrees.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-4xl mb-3">🧾</p>
-              <p className="text-slate-400 text-sm">Aucune facture pour le moment.</p>
-            </div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">N° Facture</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Patient</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Montant</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Mode</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {facturesFiltrees.map((f) => (
-                  <tr key={f.id} className="border-b border-slate-50 hover:bg-blue-50 transition-colors">
-                    <td className="px-6 py-4 text-xs font-mono text-slate-500">{f.id}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center text-blue-800 font-semibold text-xs">
-                          {f.patients?.prenom?.[0]}{f.patients?.nom?.[0]}
-                        </div>
-                        <span className="text-sm text-slate-700">{f.patients?.prenom} {f.patients?.nom}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{f.description}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-800">{f.montant.toLocaleString()} FCFA</td>
-                    <td className="px-6 py-4">
-                      {f.mode_paiement === 'mobile_money' ? (
-                        <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">📱 Mobile</span>
-                      ) : (
-                        <span className="bg-slate-50 text-slate-600 text-xs px-2 py-1 rounded-full">💵 Espèces</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                      {new Date(f.created_at).toLocaleDateString('fr-FR')}
-                    </td>
-                    <td className="px-6 py-4">
-                      {f.statut === 'paye' ? (
-                        <span className="bg-green-50 text-green-700 text-xs px-3 py-1 rounded-full font-medium">✅ Payé</span>
-                      ) : (
-                        <span className="bg-yellow-50 text-yellow-700 text-xs px-3 py-1 rounded-full font-medium">⏳ En attente</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => imprimerFacture(f)}
-                        className="bg-slate-50 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-slate-100 transition-colors">
-                        🖨️ Imprimer
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           )}
-        </div>
 
-      </main>
-    </div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm mb-4 px-4 py-3 flex items-center gap-4">
+            <span className="text-slate-400">🔍</span>
+            <input
+              type="text"
+              placeholder="Rechercher par patient ou description..."
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+              className="flex-1 text-sm outline-none text-slate-700 placeholder-slate-400"
+            />
+            <div className="flex gap-2">
+              {['tous', 'en_attente', 'paye'].map((f) => (
+                <button key={f} onClick={() => setFiltre(f)}
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                    filtre === f ? 'bg-blue-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}>
+                  {f === 'tous' ? 'Tous' : f === 'paye' ? '✅ Payé' : '⏳ En attente'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            {loading ? (
+              <div className="p-12 text-center">
+                <p className="text-4xl mb-3">⏳</p>
+                <p className="text-slate-400 text-sm">Chargement...</p>
+              </div>
+            ) : facturesFiltrees.length === 0 ? (
+              <div className="p-12 text-center">
+                <p className="text-4xl mb-3">🧾</p>
+                <p className="text-slate-400 text-sm">Aucune facture pour le moment.</p>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">N° Facture</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Patient</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Montant</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Mode</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {facturesFiltrees.map((f) => (
+                    <tr key={f.id} className="border-b border-slate-50 hover:bg-blue-50 transition-colors">
+                      <td className="px-6 py-4 text-xs font-mono text-slate-500">{f.id}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center text-blue-800 font-semibold text-xs">
+                            {f.patients?.prenom?.[0]}{f.patients?.nom?.[0]}
+                          </div>
+                          <span className="text-sm text-slate-700">{f.patients?.prenom} {f.patients?.nom}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{f.description}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-slate-800">{f.montant.toLocaleString()} FCFA</td>
+                      <td className="px-6 py-4">
+                        {f.mode_paiement === 'mobile_money' ? (
+                          <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">📱 Mobile</span>
+                        ) : (
+                          <span className="bg-slate-50 text-slate-600 text-xs px-2 py-1 rounded-full">💵 Espèces</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500">
+                        {new Date(f.created_at).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td className="px-6 py-4">
+                        {f.statut === 'paye' ? (
+                          <span className="bg-green-50 text-green-700 text-xs px-3 py-1 rounded-full font-medium">✅ Payé</span>
+                        ) : (
+                          <span className="bg-yellow-50 text-yellow-700 text-xs px-3 py-1 rounded-full font-medium">⏳ En attente</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => imprimerFacture(f)}
+                          className="bg-slate-50 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-slate-100 transition-colors">
+                          🖨️ Imprimer
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </main>
+      </div>
+    </ProtegerPage>
   )
 }
