@@ -15,7 +15,21 @@ export default function RendezVous() {
       .from('rendez_vous')
       .select('*, patients(nom, prenom), medecins(nom, prenom)')
       .order('date_heure', { ascending: true })
-    setRdvs(data || [])
+
+    if (data) {
+      const statutOrdre: any = { en_cours: 0, confirme: 1, planifie: 2, absent: 3, annule: 4, termine: 5 }
+      const prioriteOrdre: any = { urgent: 0, normal: 1, suivi: 2 }
+      const trie = [...data].sort((a, b) => {
+        const statutA = statutOrdre[a.statut] ?? 3
+        const statutB = statutOrdre[b.statut] ?? 3
+        if (statutA !== statutB) return statutA - statutB
+        const prioriteA = prioriteOrdre[a.priorite] ?? 1
+        const prioriteB = prioriteOrdre[b.priorite] ?? 1
+        if (prioriteA !== prioriteB) return prioriteA - prioriteB
+        return new Date(a.date_heure).getTime() - new Date(b.date_heure).getTime()
+      })
+      setRdvs(trie)
+    }
     setLoading(false)
   }
 
@@ -48,6 +62,12 @@ export default function RendezVous() {
     absent: { label: 'Absent', bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-400' },
   }
 
+  const prioriteConfig: any = {
+    urgent: { label: '🚨 Urgent', bg: 'bg-red-50', text: 'text-red-700' },
+    normal: { label: '📅 Normal', bg: 'bg-blue-50', text: 'text-blue-600' },
+    suivi: { label: '🔄 Suivi', bg: 'bg-green-50', text: 'text-green-700' },
+  }
+
   const actionsParStatut: any = {
     planifie: [
       { label: '✅ Confirmer', statut: 'confirme', style: 'bg-green-50 text-green-700 hover:bg-green-100' },
@@ -72,6 +92,7 @@ export default function RendezVous() {
 
   const stats = {
     total: rdvs.length,
+    urgent: rdvs.filter(r => r.priorite === 'urgent' && !['termine', 'annule'].includes(r.statut)).length,
     planifie: rdvs.filter(r => r.statut === 'planifie').length,
     confirme: rdvs.filter(r => r.statut === 'confirme').length,
     termine: rdvs.filter(r => r.statut === 'termine').length,
@@ -93,12 +114,19 @@ export default function RendezVous() {
           </a>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
             <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-lg">📅</div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
               <p className="text-xs text-slate-500">Total</p>
+            </div>
+          </div>
+          <div className="bg-red-50 rounded-2xl border border-red-100 shadow-sm p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-lg">🚨</div>
+            <div>
+              <p className="text-2xl font-bold text-red-700">{stats.urgent}</p>
+              <p className="text-xs text-red-500">Urgents</p>
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
@@ -164,6 +192,7 @@ export default function RendezVous() {
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Médecin</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date et heure</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Motif</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Priorité</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
                 </tr>
@@ -171,9 +200,13 @@ export default function RendezVous() {
               <tbody>
                 {rdvFiltres.map((rdv) => {
                   const s = statutConfig[rdv.statut] || statutConfig.planifie
+                  const p = prioriteConfig[rdv.priorite] || prioriteConfig.normal
                   const actions = actionsParStatut[rdv.statut] || []
+                  const estTermine = ['termine', 'annule'].includes(rdv.statut)
                   return (
-                    <tr key={rdv.id} className="border-b border-slate-50 hover:bg-blue-50 transition-colors">
+                    <tr key={rdv.id} className={`border-b border-slate-50 transition-colors ${
+                      estTermine ? 'opacity-50 bg-slate-50' : rdv.priorite === 'urgent' ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-blue-50'
+                    }`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-blue-800 font-semibold text-sm flex-shrink-0">
@@ -196,6 +229,11 @@ export default function RendezVous() {
                         </p>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">{rdv.motif || '—'}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center text-xs px-2 py-1 rounded-full font-medium ${p.bg} ${p.text}`}>
+                          {p.label}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium ${s.bg} ${s.text}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`}></span>
