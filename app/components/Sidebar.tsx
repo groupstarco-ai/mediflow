@@ -82,7 +82,7 @@ export default function Sidebar() {
           <div className="w-5 h-5 bg-blue-800 rounded-md"></div>
         </div>
         <div>
-          <div className="font-bold text-white text-lg leading-none">MediFlow</div>
+          <div className="font-bold text-white text-lg leading-none">Maodo</div>
           <div className="text-blue-300 text-xs mt-0.5">Gestion médicale</div>
         </div>
       </div>
