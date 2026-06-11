@@ -47,7 +47,15 @@ export default function NouveauDossier() {
     }
     setLoading(true)
     setErreur('')
+
+    const annee = new Date().getFullYear()
+    const { count } = await supabase
+      .from('dossiers_medicaux')
+      .select('*', { count: 'exact', head: true })
+    const numeroDossier = `DOS-${annee}-${String((count || 0) + 1).padStart(4, '0')}`
+
     const { error } = await supabase.from('dossiers_medicaux').insert([{
+      numero_dossier: numeroDossier,
       patient_id: form.patient_id,
       medecin_id: form.medecin_id || null,
       diagnostic: form.diagnostic,
@@ -64,6 +72,7 @@ export default function NouveauDossier() {
       ].filter(Boolean).join('\n'),
       niveau_confidentialite: parseInt(form.niveau_confidentialite),
     }])
+
     if (error) {
       setErreur('Erreur lors de la création du dossier.')
       setLoading(false)
@@ -72,7 +81,8 @@ export default function NouveauDossier() {
     const patient = patients.find(p => p.id === form.patient_id)
     const medecin = medecins.find(m => m.id === form.medecin_id)
     const niveau = form.niveau_confidentialite === '2' ? 'Confidentiel' : 'Standard'
-    await enregistrerAction('creation', 'dossiers', `Nouveau dossier — Patient: ${patient?.prenom} ${patient?.nom} — Médecin: Dr. ${medecin?.prenom} ${medecin?.nom} — Niveau: ${niveau}`)
+    await enregistrerAction('creation', 'dossiers',
+      `Nouveau dossier ${numeroDossier} — Patient: ${patient?.prenom} ${patient?.nom} — Médecin: Dr. ${medecin?.prenom} ${medecin?.nom} — Niveau: ${niveau}`)
     window.location.href = '/dashboard/dossiers'
   }
 
