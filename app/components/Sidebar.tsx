@@ -60,7 +60,7 @@ export default function Sidebar() {
     { nom: 'Patients', icone: '👤', lien: '/dashboard/patients', module: 'patients' },
     { nom: 'Rendez-vous', icone: '📅', lien: '/dashboard/rendez-vous', module: 'rendez_vous' },
     { nom: 'Médecins', icone: '🩺', lien: '/dashboard/medecins', module: 'medecins' },
-    { nom: 'Infirmiers', icone: '💉', lien: '/dashboard/infirmiers', module: 'parametres' },
+    { nom: 'Infirmiers', icone: '💉', lien: '/dashboard/infirmiers', module: 'infirmiers' },
     { nom: 'Dossiers médicaux', icone: '📋', lien: '/dashboard/dossiers', module: 'dossiers' },
     { nom: 'Facturation', icone: '💰', lien: '/dashboard/facturation', module: 'facturation' },
     { nom: 'Statistiques', icone: '📈', lien: '/dashboard/statistiques', module: 'statistiques' },
