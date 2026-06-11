@@ -170,6 +170,7 @@ export default function Dossiers() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">N° Dossier</th>
                     <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Patient</th>
                     <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Médecin</th>
                     <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</th>
@@ -184,6 +185,7 @@ export default function Dossiers() {
                     const estMonDossier = estMedecinDossier(d)
                     return (
                       <tr key={d.id} className={`border-b border-slate-50 transition-colors ${!visible ? 'bg-slate-50 opacity-70' : 'hover:bg-blue-50'}`}>
+			<td className="px-6 py-4 text-xs font-mono font-semibold text-blue-700">{d.numero_dossier || '—'}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-blue-800 font-semibold text-sm flex-shrink-0">
