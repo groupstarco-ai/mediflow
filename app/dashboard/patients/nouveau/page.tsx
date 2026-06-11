@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import { supabase, getStructureId } from '@/lib/supabase'
 import Sidebar from '../../../components/Sidebar'
 import { enregistrerAction } from '@/lib/audit'
