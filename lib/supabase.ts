@@ -8,3 +8,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+export async function getStructureId(): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data } = await supabase
+    .from('utilisateurs')
+    .select('structure_id')
+    .eq('email', user.email)
+    .single()
+  return data?.structure_id || null
+}
