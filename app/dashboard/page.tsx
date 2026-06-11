@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '../components/Sidebar'
+import { getUserRole } from '@/lib/permissions'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
+  const [role, setRole] = useState<string>('')
+  const [medecinId, setMedecinId] = useState<string | null>(null)
   const [stats, setStats] = useState({
-    patients: 0,
-    rdvAujourdhui: 0,
-    rdvEnAttente: 0,
-    rdvAnnules: 0,
+    patients: 0, rdvAujourdhui: 0, rdvEnAttente: 0, rdvAnnules: 0,
   })
   const [rdvs, setRdvs] = useState<any[]>([])
   const [urgentsEnAttente, setUrgentsEnAttente] = useState<any[]>([])
@@ -28,60 +28,65 @@ export default function Dashboard() {
       if (!user) { window.location.href = '/login'; return }
       setUser(user)
 
+      const r = await getUserRole()
+      setRole(r || '')
+
       const aujourd_hui = new Date().toISOString().split('T')[0]
 
-      const { count: totalPatients } = await supabase
-        .from('patients').select('*', { count: 'exact', head: true })
+      if (r === 'medecin') {
+        const { data: util } = await supabase.from('utilisateurs').select('id').eq('email', user.email).single()
+        const { data: med } = await supabase.from('medecins').select('id').eq('utilisateur_id', util?.id).single()
+        const medId = med?.id
+        setMedecinId(medId || null)
 
-      const { count: rdvAujourdhui } = await supabase
-        .from('rendez_vous').select('*', { count: 'exact', head: true })
-        .gte('date_heure', `${aujourd_hui}T00:00:00`)
-        .lte('date_heure', `${aujourd_hui}T23:59:59`)
+        const { count: rdvAujourdhui } = await supabase
+          .from('rendez_vous').select('*', { count: 'exact', head: true })
+          .eq('medecin_id', medId)
+          .gte('date_heure', `${aujourd_hui}T00:00:00`)
+          .lte('date_heure', `${aujourd_hui}T23:59:59`)
 
-      const { count: rdvEnAttente } = await supabase
-        .from('rendez_vous').select('*', { count: 'exact', head: true })
-        .eq('statut', 'planifie')
+        const { count: rdvEnAttente } = await supabase
+          .from('rendez_vous').select('*', { count: 'exact', head: true })
+          .eq('medecin_id', medId)
+          .eq('statut', 'planifie')
 
-      const { count: rdvAnnules } = await supabase
-        .from('rendez_vous').select('*', { count: 'exact', head: true })
-        .eq('statut', 'annule')
+        const { data: prochains } = await supabase
+          .from('rendez_vous')
+          .select('*, patients(nom, prenom)')
+          .eq('medecin_id', medId)
+          .gte('date_heure', new Date().toISOString())
+          .not('statut', 'in', '("annule","termine")')
+          .order('date_heure', { ascending: true })
+          .limit(5)
 
-      const { data: prochains } = await supabase
-        .from('rendez_vous')
-        .select('*, patients(nom, prenom)')
-        .gte('date_heure', new Date().toISOString())
-        .not('statut', 'in', '("annule","termine")')
-        .order('date_heure', { ascending: true })
-        .limit(5)
+        const { data: urgents } = await supabase
+          .from('rendez_vous')
+          .select('*, patients(nom, prenom)')
+          .eq('medecin_id', medId)
+          .eq('priorite', 'urgent')
+          .in('statut', ['planifie', 'confirme'])
+          .lte('date_heure', new Date(Date.now() - 30 * 60 * 1000).toISOString())
 
-      const il_y_a_30min = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-      const { data: urgents } = await supabase
-        .from('rendez_vous')
-        .select('*, patients(nom, prenom)')
-        .eq('priorite', 'urgent')
-        .in('statut', ['planifie', 'confirme'])
-        .lte('date_heure', il_y_a_30min)
-
-      setStats({
-        patients: totalPatients || 0,
-        rdvAujourdhui: rdvAujourdhui || 0,
-        rdvEnAttente: rdvEnAttente || 0,
-        rdvAnnules: rdvAnnules || 0,
-      })
-      setRdvs(prochains || [])
-      setUrgentsEnAttente(urgents || [])
+        setStats({ patients: 0, rdvAujourdhui: rdvAujourdhui || 0, rdvEnAttente: rdvEnAttente || 0, rdvAnnules: 0 })
+        setRdvs(prochains || [])
+        setUrgentsEnAttente(urgents || [])
+      } else {
+        const { count: totalPatients } = await supabase.from('patients').select('*', { count: 'exact', head: true })
+        const { count: rdvAujourdhui } = await supabase.from('rendez_vous').select('*', { count: 'exact', head: true }).gte('date_heure', `${aujourd_hui}T00:00:00`).lte('date_heure', `${aujourd_hui}T23:59:59`)
+        const { count: rdvEnAttente } = await supabase.from('rendez_vous').select('*', { count: 'exact', head: true }).eq('statut', 'planifie')
+        const { count: rdvAnnules } = await supabase.from('rendez_vous').select('*', { count: 'exact', head: true }).eq('statut', 'annule')
+        const { data: prochains } = await supabase.from('rendez_vous').select('*, patients(nom, prenom)').gte('date_heure', new Date().toISOString()).not('statut', 'in', '("annule","termine")').order('date_heure', { ascending: true }).limit(5)
+        const { data: urgents } = await supabase.from('rendez_vous').select('*, patients(nom, prenom)').eq('priorite', 'urgent').in('statut', ['planifie', 'confirme']).lte('date_heure', new Date(Date.now() - 30 * 60 * 1000).toISOString())
+        setStats({ patients: totalPatients || 0, rdvAujourdhui: rdvAujourdhui || 0, rdvEnAttente: rdvEnAttente || 0, rdvAnnules: rdvAnnules || 0 })
+        setRdvs(prochains || [])
+        setUrgentsEnAttente(urgents || [])
+      }
     }
     charger()
   }, [])
 
-  const aujourd_hui = new Date().toLocaleDateString('fr-FR', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  })
-
-  const minutesAttente = (dateHeure: string) => {
-    const diff = Date.now() - new Date(dateHeure).getTime()
-    return Math.floor(diff / 60000)
-  }
+  const aujourd_hui = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const minutesAttente = (dateHeure: string) => Math.floor((Date.now() - new Date(dateHeure).getTime()) / 60000)
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -101,6 +106,20 @@ export default function Dashboard() {
           </a>
         </div>
 
+        {role === 'medecin' && (
+          <div className="bg-green-50 border border-green-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
+            <span className="text-2xl">🩺</span>
+            <div>
+              <p className="text-sm font-semibold text-green-800">Mode Médecin</p>
+              <p className="text-xs text-green-600">Vous voyez uniquement vos rendez-vous et patients</p>
+            </div>
+            <a href="/dashboard/medecins/disponibilites"
+              className="ml-auto bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-medium hover:bg-green-800 transition-colors">
+              📅 Mes disponibilités →
+            </a>
+          </div>
+        )}
+
         {urgentsEnAttente.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
             <div className="flex items-center gap-3 mb-3">
@@ -111,8 +130,7 @@ export default function Dashboard() {
                 </p>
                 <p className="text-red-500 text-xs">Ces patients nécessitent une attention immédiate</p>
               </div>
-              <a href="/dashboard/rendez-vous"
-                className="ml-auto bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-medium hover:bg-red-700 transition-colors">
+              <a href="/dashboard/rendez-vous" className="ml-auto bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-medium hover:bg-red-700 transition-colors">
                 Voir les RDV →
               </a>
             </div>
@@ -128,11 +146,9 @@ export default function Dashboard() {
                       <p className="text-xs text-slate-500">{rdv.motif || 'Urgence'}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                      ⏱ {minutesAttente(rdv.date_heure)} min d'attente
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                    ⏱ {minutesAttente(rdv.date_heure)} min d'attente
+                  </span>
                 </div>
               ))}
             </div>
@@ -140,23 +156,25 @@ export default function Dashboard() {
         )}
 
         <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-slate-500">Patients actifs</p>
-              <span className="text-2xl">👥</span>
+          {role !== 'medecin' && (
+            <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm text-slate-500">Patients actifs</p>
+                <span className="text-2xl">👥</span>
+              </div>
+              <p className="text-3xl font-bold text-slate-900">{stats.patients}</p>
+              <p className="text-xs text-slate-400 mt-1">Total enregistrés</p>
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.patients}</p>
-            <p className="text-xs text-slate-400 mt-1">Total enregistrés</p>
-          </div>
-          <div className="bg-gradient-to-br from-blue-800 to-blue-600 rounded-2xl p-5 shadow-sm">
+          )}
+          <div className={`bg-gradient-to-br from-blue-800 to-blue-600 rounded-2xl p-5 shadow-sm ${role === 'medecin' ? 'col-span-2' : ''}`}>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-blue-100">RDV aujourd'hui</p>
+              <p className="text-sm text-blue-100">Mes RDV aujourd'hui</p>
               <span className="text-2xl">📅</span>
             </div>
             <p className="text-3xl font-bold text-white">{stats.rdvAujourdhui}</p>
             <p className="text-xs text-blue-200 mt-1">Consultations prévues</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+          <div className={`bg-white rounded-2xl border border-slate-100 p-5 shadow-sm ${role === 'medecin' ? 'col-span-2' : ''}`}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm text-slate-500">En attente</p>
               <span className="text-2xl">⏳</span>
@@ -164,20 +182,24 @@ export default function Dashboard() {
             <p className="text-3xl font-bold text-yellow-600">{stats.rdvEnAttente}</p>
             <p className="text-xs text-slate-400 mt-1">À confirmer</p>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-slate-500">Annulations</p>
-              <span className="text-2xl">❌</span>
+          {role !== 'medecin' && (
+            <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm text-slate-500">Annulations</p>
+                <span className="text-2xl">❌</span>
+              </div>
+              <p className="text-3xl font-bold text-red-500">{stats.rdvAnnules}</p>
+              <p className="text-xs text-slate-400 mt-1">Ce mois</p>
             </div>
-            <p className="text-3xl font-bold text-red-500">{stats.rdvAnnules}</p>
-            <p className="text-xs text-slate-400 mt-1">Ce mois</p>
-          </div>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-6">
           <div className="col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-semibold text-slate-800">Prochains rendez-vous</h2>
+              <h2 className="font-semibold text-slate-800">
+                {role === 'medecin' ? 'Mes prochains rendez-vous' : 'Prochains rendez-vous'}
+              </h2>
               <a href="/dashboard/rendez-vous" className="text-blue-800 text-sm hover:underline">Voir tout →</a>
             </div>
             {rdvs.length === 0 ? (
@@ -188,9 +210,7 @@ export default function Dashboard() {
             ) : (
               <div className="flex flex-col gap-3">
                 {rdvs.map((rdv) => (
-                  <div key={rdv.id} className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${
-                    rdv.priorite === 'urgent' ? 'bg-red-50 border border-red-100' : 'hover:bg-slate-50'
-                  }`}>
+                  <div key={rdv.id} className={`flex items-center gap-4 p-3 rounded-xl transition-colors ${rdv.priorite === 'urgent' ? 'bg-red-50 border border-red-100' : 'hover:bg-slate-50'}`}>
                     <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-800 font-semibold text-sm flex-shrink-0">
                       {rdv.patients?.prenom?.[0]}{rdv.patients?.nom?.[0]}
                     </div>
@@ -199,18 +219,12 @@ export default function Dashboard() {
                       <p className="text-xs text-slate-400">{rdv.motif}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-medium text-slate-700">
-                        {new Date(rdv.date_heure).toLocaleDateString('fr-FR')}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {new Date(rdv.date_heure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                      <p className="text-xs font-medium text-slate-700">{new Date(rdv.date_heure).toLocaleDateString('fr-FR')}</p>
+                      <p className="text-xs text-slate-400">{new Date(rdv.date_heure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                     <div className="flex flex-col gap-1 items-end">
                       <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">{rdv.statut}</span>
-                      {rdv.priorite === 'urgent' && (
-                        <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">🚨 Urgent</span>
-                      )}
+                      {rdv.priorite === 'urgent' && <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">🚨 Urgent</span>}
                     </div>
                   </div>
                 ))}
@@ -221,36 +235,68 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
             <h2 className="font-semibold text-slate-800 mb-5">Accès rapide</h2>
             <div className="flex flex-col gap-3">
-              <a href="/dashboard/patients/nouveau"
-                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-                <span className="text-xl">👤</span>
-                <span className="text-sm font-medium text-slate-700">Nouveau patient</span>
-              </a>
-              <a href="/dashboard/rendez-vous/nouveau"
-                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-                <span className="text-xl">📅</span>
-                <span className="text-sm font-medium text-slate-700">Nouveau RDV</span>
-              </a>
-              <a href="/dashboard/dossiers/nouveau"
-                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-                <span className="text-xl">📋</span>
-                <span className="text-sm font-medium text-slate-700">Nouveau dossier</span>
-              </a>
-              <a href="/dashboard/facturation"
-                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-                <span className="text-xl">💰</span>
-                <span className="text-sm font-medium text-slate-700">Facturation</span>
-              </a>
-              <a href="/dashboard/medecins/disponibilites"
-                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-                <span className="text-xl">📅</span>
-                <span className="text-sm font-medium text-slate-700">Disponibilités</span>
-              </a>
-              <a href="/dashboard/audit"
-                className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
-                <span className="text-xl">🔍</span>
-                <span className="text-sm font-medium text-slate-700">Journal d'audit</span>
-              </a>
+              {role === 'medecin' ? (
+                <>
+                  <a href="/dashboard/rendez-vous"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">📅</span>
+                    <span className="text-sm font-medium text-slate-700">Mes rendez-vous</span>
+                  </a>
+                  <a href="/dashboard/patients"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">👤</span>
+                    <span className="text-sm font-medium text-slate-700">Mes patients</span>
+                  </a>
+                  <a href="/dashboard/dossiers/nouveau"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">📋</span>
+                    <span className="text-sm font-medium text-slate-700">Nouveau dossier</span>
+                  </a>
+                  <a href="/dashboard/dossiers"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">🗂️</span>
+                    <span className="text-sm font-medium text-slate-700">Tous les dossiers</span>
+                  </a>
+                  <a href="/dashboard/medecins/disponibilites"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">🗓️</span>
+                    <span className="text-sm font-medium text-slate-700">Mes disponibilités</span>
+                  </a>
+                </>
+              ) : (
+                <>
+                  <a href="/dashboard/patients/nouveau"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">👤</span>
+                    <span className="text-sm font-medium text-slate-700">Nouveau patient</span>
+                  </a>
+                  <a href="/dashboard/rendez-vous/nouveau"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">📅</span>
+                    <span className="text-sm font-medium text-slate-700">Nouveau RDV</span>
+                  </a>
+                  <a href="/dashboard/dossiers/nouveau"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">📋</span>
+                    <span className="text-sm font-medium text-slate-700">Nouveau dossier</span>
+                  </a>
+                  <a href="/dashboard/facturation"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">💰</span>
+                    <span className="text-sm font-medium text-slate-700">Facturation</span>
+                  </a>
+                  <a href="/dashboard/medecins/disponibilites"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">📅</span>
+                    <span className="text-sm font-medium text-slate-700">Disponibilités</span>
+                  </a>
+                  <a href="/dashboard/audit"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                    <span className="text-xl">🔍</span>
+                    <span className="text-sm font-medium text-slate-700">Journal d'audit</span>
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>
