@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, getStructureId } from '@/lib/supabase'
 import Sidebar from '../../../components/Sidebar'
 import { enregistrerAction } from '@/lib/audit'
 
@@ -54,10 +54,12 @@ export default function NouveauDossier() {
       .select('*', { count: 'exact', head: true })
     const numeroDossier = `DOS-${annee}-${String((count || 0) + 1).padStart(4, '0')}`
 
+    const structureId = await getStructureId()
     const { error } = await supabase.from('dossiers_medicaux').insert([{
       numero_dossier: numeroDossier,
       patient_id: form.patient_id,
       medecin_id: form.medecin_id || null,
+      structure_id: structureId,
       diagnostic: form.diagnostic,
       traitement: form.traitement,
       ordonnance: form.ordonnance,
@@ -107,7 +109,6 @@ export default function NouveauDossier() {
           )}
 
           <div className="flex flex-col gap-6">
-
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 bg-blue-800 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
@@ -247,7 +248,6 @@ export default function NouveauDossier() {
                 </label>
               </div>
             </div>
-
           </div>
 
           <div className="flex gap-4 mt-8">
