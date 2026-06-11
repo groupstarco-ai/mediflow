@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '../../components/Sidebar'
+import ProtegerPage from '../../components/ProtegerPage'
 
 export default function AuditLogs() {
   const [logs, setLogs] = useState<any[]>([])
@@ -83,7 +84,8 @@ export default function AuditLogs() {
     a.click()
   }
 
-  return (
+ return (
+    <ProtegerPage module="parametres">
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
       <main className="flex-1 px-8 py-6">
@@ -298,5 +300,6 @@ export default function AuditLogs() {
 
       </main>
     </div>
+    </ProtegerPage>
   )
 }
