@@ -10,7 +10,7 @@ function createWindow() {
       contextIsolation: true,
     },
     icon: path.join(__dirname, 'public/icon-192x192.png'),
-    title: 'MediFlow',
+    title: 'Maodo',
     show: false,
   })
 
