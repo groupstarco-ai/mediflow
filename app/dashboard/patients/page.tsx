@@ -3,26 +3,67 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '../../components/Sidebar'
+import { getUserRole } from '@/lib/permissions'
 
 export default function Patients() {
   const [patients, setPatients] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [recherche, setRecherche] = useState('')
+  const [role, setRole] = useState<string>('')
+  const [patientConstantes, setPatientConstantes] = useState<string | null>(null)
+  const [formConstantes, setFormConstantes] = useState({
+    poids: '', taille: '', tension_systolique: '', tension_diastolique: '',
+    temperature: '', pouls: '', saturation: '', glycemie: '', observations: '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [succes, setSucces] = useState(false)
 
   useEffect(() => {
-    const getPatients = async () => {
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
+      const r = await getUserRole()
+      setRole(r || '')
       const { data } = await supabase.from('patients').select('*').order('created_at', { ascending: false })
       setPatients(data || [])
       setLoading(false)
     }
-    getPatients()
+    init()
   }, [])
 
   const patientsFiltres = patients.filter(p =>
     `${p.prenom} ${p.nom} ${p.telephone}`.toLowerCase().includes(recherche.toLowerCase())
   )
+
+  const handleConstantesChange = (e: any) => {
+    setFormConstantes({ ...formConstantes, [e.target.name]: e.target.value })
+  }
+
+  const sauvegarderConstantes = async () => {
+    if (!patientConstantes) return
+    setSaving(true)
+    await supabase.from('constantes_vitales').insert([{
+      patient_id: patientConstantes,
+      poids: formConstantes.poids ? parseFloat(formConstantes.poids) : null,
+      taille: formConstantes.taille ? parseFloat(formConstantes.taille) : null,
+      tension_systolique: formConstantes.tension_systolique ? parseInt(formConstantes.tension_systolique) : null,
+      tension_diastolique: formConstantes.tension_diastolique ? parseInt(formConstantes.tension_diastolique) : null,
+      temperature: formConstantes.temperature ? parseFloat(formConstantes.temperature) : null,
+      pouls: formConstantes.pouls ? parseInt(formConstantes.pouls) : null,
+      saturation: formConstantes.saturation ? parseInt(formConstantes.saturation) : null,
+      glycemie: formConstantes.glycemie ? parseFloat(formConstantes.glycemie) : null,
+      observations: formConstantes.observations,
+    }])
+    setSucces(true)
+    setSaving(false)
+    setFormConstantes({ poids: '', taille: '', tension_systolique: '', tension_diastolique: '', temperature: '', pouls: '', saturation: '', glycemie: '', observations: '' })
+    setTimeout(() => {
+      setSucces(false)
+      setPatientConstantes(null)
+    }, 2000)
+  }
+
+  const patientSelectionne = patients.find(p => p.id === patientConstantes)
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -34,11 +75,113 @@ export default function Patients() {
             <h1 className="text-2xl font-bold text-slate-900">Patients</h1>
             <p className="text-slate-500 text-sm mt-1">{patients.length} patient(s) enregistré(s)</p>
           </div>
-          <a href="/dashboard/patients/nouveau"
-            className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
-            + Nouveau patient
-          </a>
+          {role !== 'infirmier' && (
+            <a href="/dashboard/patients/nouveau"
+              className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
+              + Nouveau patient
+            </a>
+          )}
         </div>
+
+        {role === 'infirmier' && (
+          <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
+            <span className="text-2xl">💉</span>
+            <div>
+              <p className="text-sm font-semibold text-purple-800">Mode Infirmier</p>
+              <p className="text-xs text-purple-600">Cliquez sur "Prendre les constantes" pour saisir les mesures d'un patient</p>
+            </div>
+          </div>
+        )}
+
+        {patientConstantes && (
+          <div className="bg-white rounded-2xl border-2 border-purple-200 shadow-sm p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-800 font-bold">
+                  {patientSelectionne?.prenom?.[0]}{patientSelectionne?.nom?.[0]}
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-800">{patientSelectionne?.prenom} {patientSelectionne?.nom}</p>
+                  <p className="text-xs text-purple-600">Saisie des constantes vitales</p>
+                </div>
+              </div>
+              <button onClick={() => setPatientConstantes(null)}
+                className="text-slate-400 hover:text-slate-600 text-sm">✕ Fermer</button>
+            </div>
+
+            {succes && (
+              <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-xl mb-4">
+                ✅ Constantes enregistrées avec succès !
+              </div>
+            )}
+
+            <div className="grid grid-cols-4 gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Poids (kg)</label>
+                <input name="poids" value={formConstantes.poids} onChange={handleConstantesChange} type="number"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="70" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Taille (cm)</label>
+                <input name="taille" value={formConstantes.taille} onChange={handleConstantesChange} type="number"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="170" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Température (°C)</label>
+                <input name="temperature" value={formConstantes.temperature} onChange={handleConstantesChange} type="number"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="37.5" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Tension sys/dia</label>
+                <div className="flex gap-1">
+                  <input name="tension_systolique" value={formConstantes.tension_systolique} onChange={handleConstantesChange} type="number"
+                    className="w-full border border-slate-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-purple-500"
+                    placeholder="120" />
+                  <input name="tension_diastolique" value={formConstantes.tension_diastolique} onChange={handleConstantesChange} type="number"
+                    className="w-full border border-slate-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-purple-500"
+                    placeholder="80" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Pouls (bpm)</label>
+                <input name="pouls" value={formConstantes.pouls} onChange={handleConstantesChange} type="number"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="72" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Saturation (%)</label>
+                <input name="saturation" value={formConstantes.saturation} onChange={handleConstantesChange} type="number"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="98" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Glycémie (g/L)</label>
+                <input name="glycemie" value={formConstantes.glycemie} onChange={handleConstantesChange} type="number"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="0.9" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Observations</label>
+                <input name="observations" value={formConstantes.observations} onChange={handleConstantesChange}
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="Notes..." />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={sauvegarderConstantes} disabled={saving}
+                className="bg-purple-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
+                {saving ? 'Enregistrement...' : '💉 Enregistrer les constantes'}
+              </button>
+              <button onClick={() => setPatientConstantes(null)}
+                className="border border-slate-200 text-slate-600 px-6 py-2.5 rounded-xl text-sm font-medium">
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm mb-4 px-4 py-3 flex items-center gap-3">
           <span className="text-slate-400">🔍</span>
@@ -64,14 +207,8 @@ export default function Patients() {
             <div className="p-12 text-center">
               <p className="text-4xl mb-3">👥</p>
               <p className="text-slate-400 text-sm mb-4">
-                {recherche ? 'Aucun patient trouvé pour cette recherche.' : 'Aucun patient enregistré.'}
+                {recherche ? 'Aucun patient trouvé.' : 'Aucun patient enregistré.'}
               </p>
-              {!recherche && (
-                <a href="/dashboard/patients/nouveau"
-                  className="bg-blue-800 text-white px-4 py-2 rounded-xl text-sm font-medium">
-                  Créer le premier patient
-                </a>
-              )}
             </div>
           ) : (
             <table className="w-full">
@@ -114,10 +251,20 @@ export default function Patients() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <a href={`/dashboard/patients/${patient.id}`}
-                        className="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-blue-100 transition-colors">
-                        Voir le dossier →
-                      </a>
+                      <div className="flex gap-2">
+                        {role === 'infirmier' ? (
+                          <button
+                            onClick={() => { setPatientConstantes(patient.id); setFormConstantes({ poids: '', taille: '', tension_systolique: '', tension_diastolique: '', temperature: '', pouls: '', saturation: '', glycemie: '', observations: '' }) }}
+                            className="bg-purple-50 text-purple-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-purple-100 transition-colors">
+                            💉 Prendre les constantes
+                          </button>
+                        ) : (
+                          <a href={`/dashboard/patients/${patient.id}`}
+                            className="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-blue-100 transition-colors">
+                            Voir le dossier →
+                          </a>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
