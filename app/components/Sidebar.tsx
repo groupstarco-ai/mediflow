@@ -63,7 +63,7 @@ export default function Sidebar() {
     { nom: 'Dossiers médicaux', icone: '📋', lien: '/dashboard/dossiers', module: 'dossiers' },
     { nom: 'Facturation', icone: '💰', lien: '/dashboard/facturation', module: 'facturation' },
     { nom: 'Statistiques', icone: '📈', lien: '/dashboard/statistiques', module: 'statistiques' },
-    { nom: 'Journal d\'audit', icone: '🔍', lien: '/dashboard/audit', module: 'audit' },
+   { nom: 'Journal d\'audit', icone: '🔍', lien: '/dashboard/audit', module: 'parametres' },
     { nom: 'Paramètres', icone: '⚙️', lien: '/dashboard/parametres', module: 'parametres' },
   ]
 
