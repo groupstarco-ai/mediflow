@@ -57,10 +57,7 @@ export default function Patients() {
     setSucces(true)
     setSaving(false)
     setFormConstantes({ poids: '', taille: '', tension_systolique: '', tension_diastolique: '', temperature: '', pouls: '', saturation: '', glycemie: '', observations: '' })
-    setTimeout(() => {
-      setSucces(false)
-      setPatientConstantes(null)
-    }, 2000)
+    setTimeout(() => { setSucces(false); setPatientConstantes(null) }, 2000)
   }
 
   const patientSelectionne = patients.find(p => p.id === patientConstantes)
@@ -76,10 +73,18 @@ export default function Patients() {
             <p className="text-slate-500 text-sm mt-1">{patients.length} patient(s) enregistré(s)</p>
           </div>
           {role !== 'infirmier' && (
-            <a href="/dashboard/patients/nouveau"
-              className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
-              + Nouveau patient
-            </a>
+            <div className="flex gap-3">
+              {role === 'gestionnaire' && (
+                <a href="/dashboard/rendez-vous/nouveau"
+                  className="border border-blue-200 text-blue-700 bg-blue-50 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors">
+                  📅 Nouveau RDV
+                </a>
+              )}
+              <a href="/dashboard/patients/nouveau"
+                className="bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors">
+                + Nouveau patient
+              </a>
+            </div>
           )}
         </div>
 
@@ -90,6 +95,35 @@ export default function Patients() {
               <p className="text-sm font-semibold text-purple-800">Mode Infirmier</p>
               <p className="text-xs text-purple-600">Cliquez sur "Prendre les constantes" pour saisir les mesures d'un patient</p>
             </div>
+          </div>
+        )}
+
+        {role === 'gestionnaire' && (
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <a href="/dashboard/patients/nouveau"
+              className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-xl">👤</div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Nouveau patient</p>
+                <p className="text-xs text-slate-500">Enregistrer un patient</p>
+              </div>
+            </a>
+            <a href="/dashboard/rendez-vous/nouveau"
+              className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+              <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-xl">📅</div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Nouveau RDV</p>
+                <p className="text-xs text-slate-500">Planifier un rendez-vous</p>
+              </div>
+            </a>
+            <a href="/dashboard/facturation"
+              className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+              <div className="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center text-xl">💰</div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Facturation</p>
+                <p className="text-xs text-slate-500">Gérer les paiements</p>
+              </div>
+            </a>
           </div>
         )}
 
@@ -108,66 +142,55 @@ export default function Patients() {
               <button onClick={() => setPatientConstantes(null)}
                 className="text-slate-400 hover:text-slate-600 text-sm">✕ Fermer</button>
             </div>
-
             {succes && (
               <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-xl mb-4">
                 ✅ Constantes enregistrées avec succès !
               </div>
             )}
-
             <div className="grid grid-cols-4 gap-3">
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Poids (kg)</label>
                 <input name="poids" value={formConstantes.poids} onChange={handleConstantesChange} type="number"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
-                  placeholder="70" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500" placeholder="70" />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Taille (cm)</label>
                 <input name="taille" value={formConstantes.taille} onChange={handleConstantesChange} type="number"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
-                  placeholder="170" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500" placeholder="170" />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Température (°C)</label>
                 <input name="temperature" value={formConstantes.temperature} onChange={handleConstantesChange} type="number"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
-                  placeholder="37.5" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500" placeholder="37.5" />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Tension sys/dia</label>
                 <div className="flex gap-1">
                   <input name="tension_systolique" value={formConstantes.tension_systolique} onChange={handleConstantesChange} type="number"
-                    className="w-full border border-slate-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-purple-500"
-                    placeholder="120" />
+                    className="w-full border border-slate-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-purple-500" placeholder="120" />
                   <input name="tension_diastolique" value={formConstantes.tension_diastolique} onChange={handleConstantesChange} type="number"
-                    className="w-full border border-slate-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-purple-500"
-                    placeholder="80" />
+                    className="w-full border border-slate-200 rounded-xl px-2 py-2 text-sm outline-none focus:border-purple-500" placeholder="80" />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Pouls (bpm)</label>
                 <input name="pouls" value={formConstantes.pouls} onChange={handleConstantesChange} type="number"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
-                  placeholder="72" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500" placeholder="72" />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Saturation (%)</label>
                 <input name="saturation" value={formConstantes.saturation} onChange={handleConstantesChange} type="number"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
-                  placeholder="98" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500" placeholder="98" />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Glycémie (g/L)</label>
                 <input name="glycemie" value={formConstantes.glycemie} onChange={handleConstantesChange} type="number"
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
-                  placeholder="0.9" />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500" placeholder="0.9" />
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Observations</label>
                 <input name="observations" value={formConstantes.observations} onChange={handleConstantesChange}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500"
-                  placeholder="Notes..." />
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-500" placeholder="Notes..." />
               </div>
             </div>
             <div className="flex gap-3 mt-4">
@@ -258,6 +281,21 @@ export default function Patients() {
                             className="bg-purple-50 text-purple-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-purple-100 transition-colors">
                             💉 Prendre les constantes
                           </button>
+                        ) : role === 'gestionnaire' ? (
+                          <div className="flex gap-2">
+                            <a href={`/dashboard/patients/${patient.id}`}
+                              className="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-blue-100 transition-colors">
+                              Voir →
+                            </a>
+                            <a href={`/dashboard/patients/${patient.id}/modifier`}
+                              className="bg-slate-50 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-slate-100 transition-colors">
+                              ✏️ Modifier
+                            </a>
+                            <a href={`/dashboard/rendez-vous/nouveau?patient=${patient.id}`}
+                              className="bg-green-50 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-green-100 transition-colors">
+                              📅 RDV
+                            </a>
+                          </div>
                         ) : (
                           <a href={`/dashboard/patients/${patient.id}`}
                             className="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-blue-100 transition-colors">
