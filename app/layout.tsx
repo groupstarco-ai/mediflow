@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MediFlow — Gestion médicale",
+  title: "Maodo — Gestion médicale",
   description: "Plateforme de gestion des rendez-vous et patients pour les structures sanitaires",
   manifest: "/manifest.json",
   themeColor: "#1e3a5f",

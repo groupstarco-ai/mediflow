@@ -5,7 +5,7 @@ export default function Home() {
       <header className="flex items-center justify-between px-8 py-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-800 rounded-lg"></div>
-          <span className="font-semibold text-slate-800 text-lg">MediFlow</span>
+          <span className="font-semibold text-slate-800 text-lg">Maodo</span>
         </div>
         <a href="/login" className="bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
           Se connecter
@@ -20,7 +20,7 @@ export default function Home() {
           Gérez vos rendez-vous et patients en toute simplicité
         </h1>
         <p className="text-slate-500 mt-6 max-w-xl text-lg">
-          MediFlow centralise la gestion de vos patients, rendez-vous et dossiers médicaux pour les cliniques et cabinets médicaux.
+          Maodo centralise la gestion de vos patients, rendez-vous et dossiers médicaux pour les cliniques et cabinets médicaux au Sénégal.
         </p>
         <div className="flex gap-4 mt-10">
           <a href="/login" className="bg-blue-800 text-white px-6 py-3 rounded-lg font-medium">
@@ -72,7 +72,7 @@ export default function Home() {
           Prêt à moderniser votre structure ?
         </h2>
         <p className="text-blue-200 mb-8 max-w-lg mx-auto">
-          Rejoignez les cliniques et cabinets qui font confiance à MediFlow pour gérer leurs patients.
+          Rejoignez les cliniques et cabinets qui font confiance à Maodo pour gérer leurs patients.
         </p>
         <a href="/login" className="bg-white text-blue-800 px-8 py-3 rounded-lg font-semibold">
           Commencer gratuitement
@@ -80,8 +80,8 @@ export default function Home() {
       </section>
 
       <footer className="px-8 py-6 border-t border-slate-100 flex items-center justify-between">
-        <span className="font-semibold text-slate-800">MediFlow</span>
-        <span className="text-slate-400 text-sm">© 2026 MediFlow. Tous droits réservés.</span>
+        <span className="font-semibold text-slate-800">Maodo</span>
+        <span className="text-slate-400 text-sm">© 2026 Maodo. Tous droits réservés.</span>
       </footer>
 
     </main>
