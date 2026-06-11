@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, getStructureId } from '@/lib/supabase'
 import Sidebar from '../../components/Sidebar'
 import ProtegerPage from '../../components/ProtegerPage'
 
@@ -50,6 +50,7 @@ export default function Facturation() {
     setSaving(true)
     setErreur('')
     const noFacture = `FAC-${Date.now()}`
+    const structureId = await getStructureId()
     const { error } = await supabase.from('factures').insert([{
       id: noFacture,
       patient_id: form.patient_id,
@@ -57,6 +58,7 @@ export default function Facturation() {
       description: form.description,
       statut: form.statut,
       mode_paiement: form.mode_paiement,
+      structure_id: structureId,
     }])
     if (error) { setErreur('Erreur lors de la création.'); setSaving(false); return }
     const { data: f } = await supabase.from('factures').select('*, patients(nom, prenom)').order('created_at', { ascending: false })
