@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { supabase, getStructureId } from '@/lib/supabase'
 import Sidebar from '../../../components/Sidebar'
 import { enregistrerAction } from '@/lib/audit'
 
@@ -33,9 +34,11 @@ export default function NouveauPatient() {
     }
     setLoading(true)
     setErreur('')
+    const structureId = await getStructureId()
     const { error } = await supabase.from('patients').insert([{
       ...form,
       niveau_confidentialite: 1,
+      structure_id: structureId,
     }])
     if (error) {
       setErreur('Erreur lors de la création du patient.')

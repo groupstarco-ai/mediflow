@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, getStructureId } from '@/lib/supabase'
 import Sidebar from '../../../components/Sidebar'
 import { enregistrerAction } from '@/lib/audit'
 
@@ -120,6 +120,7 @@ export default function NouveauRdv() {
 
     const dateHeure = form.heure ? `${form.date}T${form.heure}` : `${form.date}T08:00`
 
+    const structureId = await getStructureId()
     const { error } = await supabase.from('rendez_vous').insert([{
       patient_id: form.patient_id,
       medecin_id: form.medecin_id || null,
@@ -128,6 +129,7 @@ export default function NouveauRdv() {
       motif: form.motif,
       statut: 'planifie',
       priorite: form.priorite,
+      structure_id: structureId,
     }])
     if (error) {
       setErreur('Erreur lors de la création du RDV.')
