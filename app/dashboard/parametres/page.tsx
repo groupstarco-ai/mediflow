@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, getStructureId } from '@/lib/supabase'
 import Sidebar from '../../components/Sidebar'
 import ProtegerPage from '../../components/ProtegerPage'
 
@@ -36,13 +36,16 @@ export default function Parametres() {
     }
     setSaving(true)
     setErreur('')
-    const { error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.mot_de_passe,
     })
     if (authError) { setErreur('Erreur lors de la création du compte.'); setSaving(false); return }
+    const structureId = await getStructureId()
     const { error: dbError } = await supabase.from('utilisateurs').insert([{
       nom: form.nom, prenom: form.prenom, email: form.email, role: form.role, actif: true,
+      structure_id: structureId,
+      auth_id: authData?.user?.id,
     }])
     if (dbError) { setErreur('Erreur lors de la création.'); setSaving(false); return }
     const { data } = await supabase.from('utilisateurs').select('*').order('created_at', { ascending: false })
