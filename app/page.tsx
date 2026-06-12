@@ -26,8 +26,8 @@ export default function Home() {
           <a href="/login" className="bg-blue-800 text-white px-6 py-3 rounded-lg font-medium">
             Démarrer gratuitement
           </a>
-          <a href="/login" className="border border-slate-200 text-slate-700 px-6 py-3 rounded-lg font-medium">
-            Voir la démo
+          <a href="/inscription" className="border border-slate-200 text-slate-700 px-6 py-3 rounded-lg font-medium">
+            Inscrire ma structure
           </a>
         </div>
       </section>
