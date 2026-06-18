@@ -100,7 +100,12 @@ export default function Inscription() {
         role: 'administrateur',
         structure_id: nouvelleStructure.id,
         actif: true,
+        auth_id: authData?.user?.id,
       }])
+
+    if (erreurUtilisateur) {
+      console.error('ERREUR UTILISATEUR COMPLETE:', erreurUtilisateur)
+    }
 
     if (erreurUtilisateur) {
       setErreur('Erreur lors de la création du compte administrateur.')
