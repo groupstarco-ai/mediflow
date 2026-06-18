@@ -84,7 +84,8 @@ export default function Inscription() {
     })
 
     if (erreurAuth) {
-      setErreur('Erreur lors de la création du compte : ' + erreurAuth.message)
+      console.error('ERREUR AUTH COMPLETE:', erreurAuth)
+      setErreur('Erreur auth: ' + JSON.stringify(erreurAuth))
       setLoading(false)
       return
     }
