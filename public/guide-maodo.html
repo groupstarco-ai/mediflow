@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Guide Utilisateur — Maodo</title>
+  <style>
+    @page { size: A4; margin: 15mm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; color: #1e293b; font-size: 11px; }
+    .page { page-break-after: always; padding: 10px; }
+    .header { background: #1e3a5f; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 24px; }
+    .header p { font-size: 12px; opacity: 0.8; }
+    .badge { background: white; color: #1e3a5f; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; }
+    h2 { font-size: 16px; color: #1e3a5f; border-bottom: 2px solid #1e3a5f; padding-bottom: 6px; margin-bottom: 12px; margin-top: 20px; }
+    h3 { font-size: 13px; color: #334155; margin-bottom: 8px; margin-top: 14px; }
+    p { line-height: 1.6; margin-bottom: 8px; color: #475569; }
+    .role-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .role-card h3 { margin-top: 0; }
+    .role-admin { border-left: 4px solid #1e3a5f; }
+    .role-medecin { border-left: 4px solid #16a34a; }
+    .role-infirmier { border-left: 4px solid #7c3aed; }
+    .role-gestionnaire { border-left: 4px solid #ca8a04; }
+    .step { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+    .step-num { width: 24px; height: 24px; background: #1e3a5f; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0; }
+    .step-content { flex: 1; }
+    .tip { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 10px; margin: 10px 0; }
+    .warning { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 10px; margin: 10px 0; }
+    .success { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    th { background: #f1f5f9; text-align: left; padding: 8px; font-size: 10px; color: #64748b; text-transform: uppercase; }
+    td { padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
+    .url { background: #1e3a5f; color: white; padding: 8px 16px; border-radius: 6px; font-family: monospace; font-size: 13px; display: inline-block; margin: 8px 0; }
+    .footer { text-align: center; color: #94a3b8; font-size: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+  </style>
+</head>
+<body>
+
+<!-- PAGE 1 : COUVERTURE -->
+<div class="page" style="display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:90vh; text-align:center;">
+  <div style="width:80px;height:80px;background:#1e3a5f;border-radius:20px;margin:0 auto 20px;"></div>
+  <h1 style="font-size:36px;color:#1e3a5f;margin-bottom:8px;">Maodo</h1>
+  <p style="font-size:16px;color:#64748b;margin-bottom:40px;">Plateforme de gestion médicale</p>
+  <div style="background:#1e3a5f;color:white;padding:20px 40px;border-radius:12px;margin-bottom:40px;">
+    <h2 style="font-size:22px;border:none;color:white;margin-bottom:8px;">Guide Utilisateur</h2>
+    <p style="color:#93c5fd;">Version 1.0 — Juin 2026</p>
+  </div>
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;max-width:300px;">
+    <p style="font-size:12px;color:#475569;margin-bottom:8px;">Accès à la plateforme</p>
+    <div class="url">mediflow-bay.vercel.app</div>
+  </div>
+  <div class="footer" style="margin-top:60px;">
+    <p>Document confidentiel — Maodo © 2026</p>
+  </div>
+</div>
+
+<!-- PAGE 2 : CONNEXION -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>1. Connexion à Maodo</h1>
+      <p>Comment accéder à la plateforme</p>
+    </div>
+    <span class="badge">DÉMARRAGE</span>
+  </div>
+
+  <h2>Accéder à la plateforme</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <strong>Ouvrez Chrome ou Edge</strong> sur votre ordinateur ou tablette.
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <strong>Tapez l'adresse</strong> dans la barre de navigation :<br>
+      <div class="url">mediflow-bay.vercel.app</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <strong>Entrez votre email et mot de passe</strong> fournis par l'administrateur.
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <strong>Cliquez sur "Se connecter"</strong> — vous accédez à votre espace selon votre rôle.
+    </div>
+  </div>
+
+  <div class="warning">
+    <strong>⚠️ Attention :</strong> Après 3 tentatives échouées, votre compte est bloqué 30 minutes. Contactez l'administrateur si vous avez oublié votre mot de passe.
+  </div>
+
+  <div class="tip">
+    <strong>💡 Astuce :</strong> Installez Maodo comme application sur votre bureau — dans Chrome, cliquez sur l'icône d'installation dans la barre d'adresse pour un accès rapide sans navigateur.
+  </div>
+
+  <h2>Sécurité</h2>
+  <table>
+    <tr><th>Règle</th><th>Détail</th></tr>
+    <tr><td>Mot de passe</td><td>Minimum 12 caractères, ne pas partager</td></tr>
+    <tr><td>Session</td><td>Déconnexion automatique après 30 minutes d'inactivité</td></tr>
+    <tr><td>Blocage</td><td>3 tentatives échouées = blocage 30 minutes</td></tr>
+    <tr><td>Déconnexion</td><td>Toujours se déconnecter en quittant le poste</td></tr>
+  </table>
+
+  <div class="footer">
+    <p>Maodo — Guide Utilisateur v1.0 | Page 2</p>
+  </div>
+</div>
+
+<!-- PAGE 3 : RÔLES -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>2. Les rôles utilisateurs</h1>
+      <p>Chaque rôle a ses propres accès</p>
+    </div>
+    <span class="badge">RÔLES</span>
+  </div>
+
+  <div class="role-card role-admin">
+    <h3>🛡️ Administrateur</h3>
+    <p>Accès complet à tous les modules. Gère les utilisateurs, configure la structure, consulte le journal d'audit.</p>
+    <p><strong>Modules :</strong> Tableau de bord, Patients, RDV, Médecins, Infirmiers, Dossiers, Facturation, Statistiques, Audit, Paramètres</p>
+  </div>
+
+  <div class="role-card role-medecin">
+    <h3>🩺 Médecin</h3>
+    <p>Voit ses propres rendez-vous et dossiers. Accède aux dossiers des confrères avec un code PIN à 4 chiffres.</p>
+    <p><strong>Modules :</strong> Tableau de bord, Patients, Rendez-vous, Dossiers médicaux</p>
+  </div>
+
+  <div class="role-card role-infirmier">
+    <h3>💉 Infirmier</h3>
+    <p>Accède à la liste des patients et peut saisir rapidement les constantes vitales directement depuis la liste.</p>
+    <p><strong>Modules :</strong> Tableau de bord, Patients, Rendez-vous</p>
+  </div>
+
+  <div class="role-card role-gestionnaire">
+    <h3>📋 Gestionnaire / Secrétaire</h3>
+    <p>Gère l'accueil des patients, planifie les rendez-vous et s'occupe de la facturation.</p>
+    <p><strong>Modules :</strong> Tableau de bord, Patients, Rendez-vous, Médecins, Infirmiers, Facturation, Statistiques</p>
+  </div>
+
+  <div class="tip">
+    <strong>💡 Important :</strong> Chaque utilisateur ne voit que ce dont il a besoin pour son travail. C'est une mesure de sécurité pour protéger les données médicales.
+  </div>
+
+  <div class="footer">
+    <p>Maodo — Guide Utilisateur v1.0 | Page 3</p>
+  </div>
+</div>
+
+<!-- PAGE 4 : PATIENTS -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>3. Gestion des patients</h1>
+      <p>Enregistrer et gérer les fiches patients</p>
+    </div>
+    <span class="badge">PATIENTS</span>
+  </div>
+
+  <h2>Créer un nouveau patient</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Cliquez sur <strong>"Patients"</strong> dans le menu de gauche.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Cliquez sur <strong>"+ Nouveau patient"</strong> en haut à droite.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Remplissez les informations : nom, prénom, date de naissance, téléphone, groupe sanguin.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Ajoutez le <strong>contact d'urgence</strong> — important en cas d'urgence médicale.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content">Cliquez sur <strong>"Enregistrer"</strong>.</div>
+  </div>
+
+  <h2>Saisir les constantes vitales (Infirmier)</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Allez dans <strong>"Patients"</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Cliquez sur <strong>"💉 Prendre les constantes"</strong> à côté du patient.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Saisissez : poids, taille, température, tension, pouls, saturation, glycémie.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Cliquez sur <strong>"Enregistrer les constantes"</strong>.</div>
+  </div>
+
+  <h2>Imprimer la fiche patient</h2>
+  <p>Ouvrez la fiche d'un patient → cliquez sur <strong>"🖨️ Imprimer la fiche"</strong> en haut à droite. La fiche complète s'imprime avec toutes les constantes, dossiers et rendez-vous.</p>
+
+  <div class="footer">
+    <p>Maodo — Guide Utilisateur v1.0 | Page 4</p>
+  </div>
+</div>
+
+<!-- PAGE 5 : RENDEZ-VOUS -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>4. Rendez-vous</h1>
+      <p>Planifier et gérer les consultations</p>
+    </div>
+    <span class="badge">RDV</span>
+  </div>
+
+  <h2>Créer un rendez-vous</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Cliquez sur <strong>"Rendez-vous"</strong> puis <strong>"+ Nouveau RDV"</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Choisissez le <strong>niveau de priorité</strong> : 🚨 Urgent, 📅 Normal, 🔄 Suivi.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Sélectionnez le <strong>patient</strong> et le <strong>médecin</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Choisissez la <strong>date</strong> — les créneaux disponibles s'affichent automatiquement.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content">Cliquez sur un <strong>créneau horaire</strong> disponible et ajoutez le motif.</div>
+  </div>
+
+  <h2>Niveaux de priorité</h2>
+  <table>
+    <tr><th>Priorité</th><th>Utilisation</th><th>Exemples</th></tr>
+    <tr><td>🚨 Urgent</td><td>Attention immédiate requise</td><td>Douleur intense, fièvre élevée, traumatisme</td></tr>
+    <tr><td>📅 Normal</td><td>Consultation standard</td><td>Grippe, toux, douleurs modérées</td></tr>
+    <tr><td>🔄 Suivi</td><td>Contrôle ou renouvellement</td><td>Résultats d'analyses, renouvellement ordonnance</td></tr>
+  </table>
+
+  <div class="warning">
+    <strong>⚠️ Alerte urgences :</strong> Si un patient urgent attend depuis plus de 30 minutes, une alerte rouge s'affiche automatiquement sur le tableau de bord.
+  </div>
+
+  <div class="footer">
+    <p>Maodo — Guide Utilisateur v1.0 | Page 5</p>
+  </div>
+</div>
+
+<!-- PAGE 6 : DOSSIERS ET FACTURATION -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>5. Dossiers et Facturation</h1>
+      <p>Dossiers médicaux et gestion financière</p>
+    </div>
+    <span class="badge">DOSSIERS</span>
+  </div>
+
+  <h2>Créer un dossier médical</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Allez dans <strong>"Dossiers médicaux"</strong> → <strong>"+ Nouveau dossier"</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Sélectionnez le patient et le médecin traitant.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Remplissez les antécédents, le diagnostic, le traitement et l'ordonnance.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Choisissez le niveau de confidentialité : <strong>Standard</strong> ou <strong>🔒 Confidentiel</strong>.</div>
+  </div>
+
+  <div class="tip">
+    <strong>🔐 Code PIN confrères :</strong> Pour accéder aux dossiers d'un autre médecin, un code PIN à 4 chiffres est requis. Ce code est défini par chaque médecin.
+  </div>
+
+  <h2>Créer une facture</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Allez dans <strong>"Facturation"</strong> → <strong>"+ Nouvelle facture"</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Sélectionnez le patient, entrez la description et le montant en FCFA.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Choisissez le mode de paiement : <strong>💵 Espèces</strong> ou <strong>📱 Mobile Money</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Cliquez sur <strong>"🖨️ Imprimer"</strong> pour générer la facture format A5.</div>
+  </div>
+
+  <h2>Numérotation des dossiers</h2>
+  <p>Chaque dossier reçoit automatiquement un numéro unique : <strong>DOS-2026-0001</strong></p>
+
+  <div class="footer">
+    <p>Maodo — Guide Utilisateur v1.0 | Page 6</p>
+  </div>
+</div>
+
+<!-- PAGE 7 : ADMINISTRATION -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>6. Administration</h1>
+      <p>Gestion de la structure et des utilisateurs</p>
+    </div>
+    <span class="badge">ADMIN</span>
+  </div>
+
+  <h2>Configurer la structure</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Allez dans <strong>"Paramètres"</strong> → <strong>"Configurer ma structure"</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Remplissez : nom de la clinique, type, adresse, téléphone, email.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Ces informations apparaissent automatiquement sur les factures imprimées.</div>
+  </div>
+
+  <h2>Créer un utilisateur</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">Allez dans <strong>"Paramètres"</strong> → <strong>"+ Nouvel utilisateur"</strong>.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">Remplissez nom, prénom, email et mot de passe (12 caractères minimum).</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">Choisissez le rôle : Gestionnaire, Médecin, Infirmier ou Administrateur.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">Communiquez les identifiants à l'utilisateur par WhatsApp ou en main propre.</div>
+  </div>
+
+  <h2>Journal d'audit</h2>
+  <p>Le journal d'audit enregistre toutes les actions effectuées sur la plateforme. Accessible uniquement par l'administrateur via le menu <strong>"Journal d'audit"</strong>. Vous pouvez filtrer par date, module, action et exporter en CSV.</p>
+
+  <div class="success">
+    <strong>✅ Bon à savoir :</strong> Toutes les données sont sauvegardées automatiquement en temps réel sur les serveurs sécurisés de Supabase en Europe.
+  </div>
+
+  <div class="footer">
+    <p>Maodo — Guide Utilisateur v1.0 | Page 7</p>
+  </div>
+</div>
+
+<!-- PAGE 8 : CONTACTS ET SUPPORT -->
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>7. Support et contacts</h1>
+      <p>En cas de problème</p>
+    </div>
+    <span class="badge">SUPPORT</span>
+  </div>
+
+  <h2>Problèmes courants</h2>
+  <table>
+    <tr><th>Problème</th><th>Solution</th></tr>
+    <tr><td>Impossible de se connecter</td><td>Vérifiez l'email et le mot de passe. Après 3 échecs, attendez 30 min.</td></tr>
+    <tr><td>Page blanche ou erreur</td><td>Rafraîchissez la page avec F5 ou Ctrl+R.</td></tr>
+    <tr><td>Données non affichées</td><td>Vérifiez la connexion internet et rafraîchissez.</td></tr>
+    <tr><td>Facture ne s'imprime pas</td><td>Autorisez les popups dans Chrome pour le site.</td></tr>
+    <tr><td>Module non visible</td><td>Votre rôle ne donne pas accès à ce module. Contactez l'admin.</td></tr>
+    <tr><td>Compte bloqué</td><td>Attendez 30 minutes ou contactez l'administrateur.</td></tr>
+  </table>
+
+  <h2>Conseils de sécurité</h2>
+  <div class="warning">
+    <strong>🔒 Règles importantes :</strong>
+    <ul style="margin-top:8px;padding-left:16px;line-height:2;">
+      <li>Ne partagez jamais votre mot de passe</li>
+      <li>Déconnectez-vous toujours en quittant votre poste</li>
+      <li>Ne laissez pas la session ouverte sur un ordinateur partagé</li>
+      <li>Signalez tout accès suspect à l'administrateur</li>
+    </ul>
+  </div>
+
+  <h2>Contact support</h2>
+  <div class="success">
+    <p><strong>Administrateur Maodo</strong></p>
+    <p>Email : groupstarco@gmail.com</p>
+    <p>Pour tout problème technique, bug ou demande d'amélioration.</p>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;">
+    <div style="width:60px;height:60px;background:#1e3a5f;border-radius:14px;margin:0 auto 12px;"></div>
+    <h2 style="border:none;color:#1e3a5f;font-size:20px;">Maodo</h2>
+    <p style="color:#64748b;">Plateforme de gestion médicale sécurisée</p>
+    <div class="url" style="margin-top:12px;">mediflow-bay.vercel.app</div>
+  </div>
+
+  <div class="footer">
+    <p>Maodo — Guide Utilisateur v1.0 — © 2026 Maodo. Tous droits réservés. | Page 8</p>
+  </div>
+</div>
+
+</body>
+</html>

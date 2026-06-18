@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabaseClient as supabase } from '@/lib/supabase'
 import Sidebar from '../../components/Sidebar'
 import { getUserRole } from '@/lib/permissions'
 

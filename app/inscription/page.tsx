@@ -72,7 +72,7 @@ export default function Inscription() {
       .single()
 
     if (erreurStructure) {
-      setErreur('Erreur lors de la création de la structure.')
+      setErreur('Erreur structure: ' + erreurStructure.message)
       setLoading(false)
       return
     }

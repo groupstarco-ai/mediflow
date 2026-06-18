@@ -1,0 +1,70 @@
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+interface CreateStructureParams {
+  nom: string
+  email: string
+  telephone: string
+  adresse: string
+  plan: 'starter' | 'clinique' | 'pro'
+  adminEmail: string
+  adminPassword: string
+  adminNom: string
+  adminPrenom: string
+}
+
+export async function createStructure({
+  nom, email, telephone, adresse, plan,
+  adminEmail, adminPassword, adminNom, adminPrenom,
+}: CreateStructureParams) {
+
+  const { data: structureId, error: structureError } = await supabaseAdmin
+    .rpc('creer_structure_cliente', {
+      p_nom: nom,
+      p_email: email,
+      p_telephone: telephone,
+      p_adresse: adresse,
+      p_plan: plan,
+    })
+
+  if (structureError) throw new Error(`Erreur structure: ${structureError.message}`)
+
+  const { data: authUser, error: authError } = await supabaseAdmin
+    .auth.admin.createUser({
+      email: adminEmail,
+      password: adminPassword,
+      email_confirm: true,
+      user_metadata: {
+        structure_id: structureId,
+        role: 'administrateur',
+        nom: adminNom,
+        prenom: adminPrenom,
+      }
+    })
+
+  if (authError) throw new Error(`Erreur auth: ${authError.message}`)
+
+  const { error: userError } = await supabaseAdmin
+    .from('utilisateurs')
+    .insert({
+      auth_id: authUser.user.id,
+      structure_id: structureId,
+      nom: adminNom,
+      prenom: adminPrenom,
+      email: adminEmail,
+      role: 'administrateur',
+      actif: true,
+    })
+
+  if (userError) throw new Error(`Erreur utilisateur: ${userError.message}`)
+
+  return {
+    structureId,
+    adminEmail,
+    message: `Clinique "${nom}" créée avec succès`
+  }
+}
