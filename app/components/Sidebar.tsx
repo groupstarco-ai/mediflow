@@ -1,4 +1,5 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getUserRole, getPermissions } from '@/lib/permissions'
@@ -8,6 +9,7 @@ export default function Sidebar() {
   const [user, setUser] = useState<any>(null)
   const [role, setRole] = useState<string>('')
   const [permissions, setPermissions] = useState<any>({})
+  const [menuOuvert, setMenuOuvert] = useState(false)
 
   useEffect(() => {
     setPathname(window.location.pathname)
@@ -24,7 +26,6 @@ export default function Sidebar() {
       }
     }
     init()
-
     let timer: ReturnType<typeof setTimeout>
     const resetTimer = () => {
       clearTimeout(timer)
@@ -64,7 +65,7 @@ export default function Sidebar() {
     { nom: 'Dossiers médicaux', icone: '📋', lien: '/dashboard/dossiers', module: 'dossiers' },
     { nom: 'Facturation', icone: '💰', lien: '/dashboard/facturation', module: 'facturation' },
     { nom: 'Statistiques', icone: '📈', lien: '/dashboard/statistiques', module: 'statistiques' },
-   { nom: 'Journal d\'audit', icone: '🔍', lien: '/dashboard/audit', module: 'parametres' },
+    { nom: 'Journal d\'audit', icone: '🔍', lien: '/dashboard/audit', module: 'parametres' },
     { nom: 'Paramètres', icone: '⚙️', lien: '/dashboard/parametres', module: 'parametres' },
   ]
 
@@ -76,57 +77,81 @@ export default function Sidebar() {
   const rc = roleConfig[role] || roleConfig.gestionnaire
 
   return (
-    <aside className="w-60 min-h-screen bg-blue-950 flex flex-col">
-      <div className="flex items-center gap-3 px-5 py-6">
-        <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center">
-          <div className="w-5 h-5 bg-blue-800 rounded-md"></div>
-        </div>
-        <div>
-          <div className="font-bold text-white text-lg leading-none">Maodo</div>
-          <div className="text-blue-300 text-xs mt-0.5">Gestion médicale</div>
-        </div>
-      </div>
-      <div className="px-3 mb-4">
-        <div className="h-px bg-blue-800"></div>
-      </div>
-      <nav className="flex-1 px-3 flex flex-col gap-1">
-        {menusFiltres.map((item) => (
-          <a key={item.lien}
-            href={item.lien}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-              pathname === item.lien
-                ? 'bg-blue-700 text-white font-medium shadow-sm'
-                : 'text-blue-200 hover:bg-blue-900 hover:text-white'
-            }`}
-          >
-            <span className="text-base">{item.icone}</span>
-            <span>{item.nom}</span>
-          </a>
-        ))}
-      </nav>
-      <div className="px-3 mb-3">
-        <div className="h-px bg-blue-800"></div>
-      </div>
-      <div className="px-3 pb-4">
-        <div className="bg-blue-900 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <span>{rc.icone}</span>
-            <span className={`text-xs font-medium ${rc.couleur}`}>{rc.label}</span>
+    <>
+      <button
+        onClick={() => setMenuOuvert(true)}
+        className="md:hidden fixed top-4 left-4 z-40 w-11 h-11 bg-blue-950 rounded-xl flex items-center justify-center text-white shadow-lg"
+      >
+        <span className="text-lg">☰</span>
+      </button>
+
+      {menuOuvert && (
+        <div
+          onClick={() => setMenuOuvert(false)}
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+        ></div>
+      )}
+
+      <aside className={`w-64 md:w-60 min-h-screen bg-blue-950 flex flex-col fixed md:static top-0 left-0 z-50 transition-transform duration-300 ${menuOuvert ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <div className="flex items-center justify-between px-5 py-6">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-5 h-5 bg-blue-800 rounded-md"></div>
+            </div>
+            <div>
+              <div className="font-bold text-white text-lg leading-none">Maodo</div>
+              <div className="text-blue-300 text-xs mt-0.5">Gestion médicale</div>
+            </div>
           </div>
-          <p className="text-xs text-blue-300 mb-0.5">Connecté en tant que</p>
-          <p className="text-sm text-white font-medium truncate">{user?.email}</p>
+          <button onClick={() => setMenuOuvert(false)} className="md:hidden text-blue-300 text-xl px-2">✕</button>
         </div>
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut()
-            window.location.href = '/login'
-          }}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-300 hover:bg-red-900 hover:text-red-100 w-full transition-all"
-        >
-          <span>🚪</span>
-          <span>Déconnexion</span>
-        </button>
-      </div>
-    </aside>
+
+        <div className="px-3 mb-4">
+          <div className="h-px bg-blue-800"></div>
+        </div>
+
+        <nav className="flex-1 px-3 flex flex-col gap-1 overflow-y-auto">
+          {menusFiltres.map((item) => (
+            <a key={item.lien}
+              href={item.lien}
+              onClick={() => setMenuOuvert(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+                pathname === item.lien
+                  ? 'bg-blue-700 text-white font-medium shadow-sm'
+                  : 'text-blue-200 hover:bg-blue-900 hover:text-white'
+              }`}
+            >
+              <span className="text-base">{item.icone}</span>
+              <span>{item.nom}</span>
+            </a>
+          ))}
+        </nav>
+
+        <div className="px-3 mb-3">
+          <div className="h-px bg-blue-800"></div>
+        </div>
+
+        <div className="px-3 pb-4">
+          <div className="bg-blue-900 rounded-xl p-3 mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span>{rc.icone}</span>
+              <span className={`text-xs font-medium ${rc.couleur}`}>{rc.label}</span>
+            </div>
+            <p className="text-xs text-blue-300 mb-0.5">Connecté en tant que</p>
+            <p className="text-sm text-white font-medium truncate">{user?.email}</p>
+          </div>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut()
+              window.location.href = '/login'
+            }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-300 hover:bg-red-900 hover:text-red-100 w-full transition-all"
+          >
+            <span>🚪</span>
+            <span>Déconnexion</span>
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }

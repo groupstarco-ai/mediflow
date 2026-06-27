@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 
 export default function Inscription() {
   const [etape, setEtape] = useState(1)
@@ -58,63 +57,28 @@ export default function Inscription() {
     setLoading(true)
     setErreur('')
 
-    // 1. Créer la structure
-    const { data: nouvelleStructure, error: erreurStructure } = await supabase
-      .from('structures')
-      .insert([{
-        nom: structure.nom,
-        type: structure.type,
-        adresse: structure.adresse,
-        telephone: structure.telephone,
-        email: structure.email,
-      }])
-      .select()
-      .single()
+    try {
+      const response = await fetch('/api/inscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ structure, admin }),
+      })
 
-    if (erreurStructure) {
-      setErreur('Erreur structure: ' + erreurStructure.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErreur(data.error || 'Une erreur est survenue.')
+        setLoading(false)
+        return
+      }
+
+      setSucces(true)
       setLoading(false)
-      return
-    }
 
-    // 2. Créer le compte auth
-    const { data: authData, error: erreurAuth } = await supabase.auth.signUp({
-      email: admin.email,
-      password: admin.mot_de_passe,
-    })
-
-    if (erreurAuth) {
-      console.error('ERREUR AUTH COMPLETE:', erreurAuth)
-      setErreur('Erreur auth: ' + JSON.stringify(erreurAuth))
+    } catch (error: any) {
+      setErreur('Erreur de connexion: ' + error.message)
       setLoading(false)
-      return
     }
-
-    // 3. Créer l'utilisateur dans la table utilisateurs
-    const { error: erreurUtilisateur } = await supabase
-      .from('utilisateurs')
-      .insert([{
-        email: admin.email,
-        nom: admin.nom,
-        prenom: admin.prenom,
-        role: 'administrateur',
-        structure_id: nouvelleStructure.id,
-        actif: true,
-        auth_id: authData?.user?.id,
-      }])
-
-    if (erreurUtilisateur) {
-      console.error('ERREUR UTILISATEUR COMPLETE:', erreurUtilisateur)
-    }
-
-    if (erreurUtilisateur) {
-      setErreur('Erreur lors de la création du compte administrateur.')
-      setLoading(false)
-      return
-    }
-
-    setSucces(true)
-    setLoading(false)
   }
 
   if (succes) {
